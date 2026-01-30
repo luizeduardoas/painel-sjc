@@ -1,0 +1,4 @@
+/uploads/usuario/*.*
+!uploads/usuario/unknown.png
+
+/nbproject/private/private.xml

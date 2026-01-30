@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
+  <script type="text/javascript" src="../src/jquery.stickit.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="absolute sticky">
+    <p>This is content</p>
+    <p>This is content</p>
+    <p>This is content</p>
+  </div>
+  <div class="wrap">
+    <div class="header">This is header This is header This is header This is header This is header This is header This is header This is header This is header This is header This is header This is header This is header This is header This is header This is header This is header This is header This is header This is header This is header This is header</div>
+    <p>This is content This is content This is content This is content This is content This is content</p>
+    <p>This is content</p>
+    <p>This is content</p>
+  </div>
+  <input type="button" value="Destroy" id="destroy"/>
+  <div class="wrap">
+    <div class="header">This is header</div>
+    <p>This is content</p>
+    <p>This is content</p>
+    <p>This is content</p>
+  </div>
+  <div class="float-wrap">
+    <div class="float">Float and sticky</div>
+    <div class="float sticky">Float</div>
+    <div class="float">Float</div>
+  </div>
+  <div class="float-wrap">
+    <div class="float-right">Float and sticky</div>
+    <div class="float-right sticky">Float</div>
+    <div class="float-right">Float</div>
+  </div>
+  <div class="wrap">
+    <div class="sticky" style="background-color: yellow;border: 25px solid gray;margin: 20px;padding: 15px;width:80%">This is style header</div>
+    <p>This is content</p>
+    <p>This is content</p>
+    <p>This is content</p>
+  </div>
+  <div class="relative">
+    <div style="position:absolute;left: 10px" class="header">
+      Absolute in relative
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="header box-sizing">This is box-sizing header</div>
+    <p>This is content</p>
+    <p>This is content</p>
+    <p>This is content</p>
+  </div>
+  <div class="wrap">
+    <div class="header">This is header</div>
+    <p>This is content</p>
+    <p>This is content</p>
+    <p>This is content</p>
+  </div>
+  <div class="wrap">
+    <div class="header">This is header</div>
+    <p>This is content</p>
+    <p>This is content</p>
+    <p>This is content</p>
+  </div>
+  <div class="wrap">
+    <div class="header">This is header</div>
+    <p>This is content</p>
+    <p>This is content</p>
+    <p>This is content</p>
+  </div>
+  <div class="wrap">
+    <div class="header">This is header</div>
+    <p>This is content</p>
+    <p>This is content</p>
+    <p>This is content</p>
+  </div>
+  <div class="wrap">
+    <div class="header">This is header</div>
+    <p>This is content</p>
+    <p>This is content</p>
+    <p>This is content</p>
+  </div>
+  <script>
+  $('.header,.sticky').stickit({scope: StickScope.Parent});
+  $('#destroy').click(function() {
+    $('.header,.sticky').stickit('destroy');
+  });
+  </script>
+</body>
+</html>
