@@ -61,13 +61,13 @@ function atualizarCurso($fp) {
         flush();
         $arrMoodle = array();
         $mysqlMoodle = new GDbMysqlMoodle();
-        $mysqlMoodle->execute("SELECT id, fullname, category FROM moodle.mdl_course c WHERE visible = 1 AND EXISTS (SELECT 1 FROM moodle.vw_categorias v WHERE v.visivel = 1 AND c.category = v.id) ORDER BY fullname");
+        $mysqlMoodle->execute("SELECT id, fullname, category, CASE visible WHEN 1 THEN 'S' ELSE 'N' END AS visivel FROM moodle.mdl_course WHERE id > 1 ORDER BY fullname");
         echo '<dt class="text-info">Moodle:</dt><dd class="text-info">' . $mysqlMoodle->numRows() . '</dd>';
         ob_flush();
         flush();
         if ($mysqlMoodle->numRows()) {
             while ($mysqlMoodle->fetch()) {
-                $arrMoodle[] = array("id" => $mysqlMoodle->res["id"], "nome" => trim($mysqlMoodle->res["fullname"]), "categoria" => $mysqlMoodle->res["category"]);
+                $arrMoodle[] = array("id" => $mysqlMoodle->res["id"], "nome" => trim($mysqlMoodle->res["fullname"]), "categoria" => $mysqlMoodle->res["category"], "visivel" => $mysqlMoodle->res["visivel"]);
             }
         }
 
@@ -76,13 +76,13 @@ function atualizarCurso($fp) {
         flush();
         $arrCurso = array();
         $mysql = new GDbMysql();
-        $mysql->execute("SELECT cur_int_codigo, niv_var_identificador, cur_var_nome, cur_int_courseid FROM ava_curso cur INNER JOIN nivel niv ON (niv.niv_int_codigo = cur.niv_int_codigo) ORDER BY cur_var_nome");
+        $mysql->execute("SELECT cur_int_codigo, niv_var_identificador, cur_var_nome, cur_int_courseid, cur_cha_visivel FROM ava_curso cur INNER JOIN nivel niv ON (niv.niv_int_codigo = cur.niv_int_codigo) ORDER BY cur_var_nome");
         echo '<dt class="text-info">Painel:</dt><dd class="text-info">' . $mysql->numRows() . '</dd>';
         ob_flush();
         flush();
         if ($mysql->numRows()) {
             while ($mysql->fetch()) {
-                $arrCurso[] = array("id" => $mysql->res["cur_int_courseid"], "nome" => trim($mysql->res["cur_var_nome"]), "categoria" => $mysql->res["niv_var_identificador"]);
+                $arrCurso[] = array("id" => $mysql->res["cur_int_courseid"], "nome" => trim($mysql->res["cur_var_nome"]), "categoria" => $mysql->res["niv_var_identificador"], "visivel" => $mysql->res["cur_cha_visivel"]);
             }
         }
 
@@ -93,7 +93,7 @@ function atualizarCurso($fp) {
         foreach ($arrCurso as $curso) {
             $existe = false;
             foreach ($arrMoodle as $moodle) {
-                if ($moodle["id"] == $curso["id"] && $moodle["nome"] == $curso["nome"] && $moodle["categoria"] == $curso["categoria"]) {
+                if ($moodle["id"] == $curso["id"] /* && $moodle["nome"] == $curso["nome"] && $moodle["categoria"] == $curso["categoria"] && $moodle["visivel"] == $curso["visivel"] */) {
                     $existe = true;
                     break;
                 }
@@ -129,24 +129,24 @@ function atualizarCurso($fp) {
         foreach ($arrMoodle as $moodle) {
             $existe = false;
             foreach ($arrCurso as $curso) {
-                if ($moodle["id"] == $curso["id"] && $moodle["nome"] == $curso["nome"] && $moodle["categoria"] == $curso["categoria"]) {
+                if ($moodle["id"] == $curso["id"] && $moodle["nome"] == $curso["nome"] && $moodle["categoria"] == $curso["categoria"] && $moodle["visivel"] == $curso["visivel"]) {
                     $existe = true;
                     break;
                 }
             }
             if (!$existe) {
                 $nenhum = false;
-                $identificador = 'Id: ' . $moodle["id"] . ' - Nome: ' . $moodle["nome"] . ' - Categoria: ' . $moodle["categoria"];
+                $identificador = 'Id: ' . $moodle["id"] . ' - Nome: ' . $moodle["nome"] . ' - Categoria: ' . $moodle["categoria"] . ' - Visível: ' . $moodle["visivel"];
                 try {
                     $mysql = new GDbMysql();
                     $qtd = $mysql->executeValue("SELECT COUNT(*) FROM ava_curso WHERE cur_int_courseid = ?", array("s", $moodle["id"]));
                     if ($qtd > 0) {
-                        $mysql->execute("UPDATE ava_curso SET niv_int_codigo = (SELECT niv_int_codigo FROM nivel WHERE niv_var_identificador = ?), cur_var_nome = ? WHERE cur_int_courseid = ?;", array("sss", $moodle["categoria"], $moodle["nome"], $moodle["id"]), false);
+                        $mysql->execute("UPDATE ava_curso SET niv_int_codigo = (SELECT niv_int_codigo FROM nivel WHERE niv_var_identificador = ?), cur_var_nome = ?, cur_cha_visivel = ? WHERE cur_int_courseid = ?;", array("ssss", $moodle["categoria"], $moodle["nome"], $moodle["visivel"], $moodle["id"]), false);
                         $count['alterado']++;
                         echo '<dt class="text-success">' . $count['alterado'] . ' - Alterado</dt><dd class="text-success">' . $identificador . '</dd>';
                         fwrite($fp, date("d/m/Y H:i:s") . ' - ' . $count['alterado'] . ' - Alterado - ' . $identificador . "\n");
                     } else {
-                        $mysql->execute("INSERT INTO ava_curso (niv_int_codigo, cur_int_courseid, cur_var_nome) VALUES ((SELECT niv_int_codigo FROM nivel WHERE niv_var_identificador = ?),?,?);", array("sss", $moodle["categoria"], $moodle["id"], $moodle["nome"]), false);
+                        $mysql->execute("INSERT INTO ava_curso (niv_int_codigo, cur_int_courseid, cur_var_nome, cur_cha_visivel) VALUES ((SELECT niv_int_codigo FROM nivel WHERE niv_var_identificador = ?),?,?,?);", array("ssss", $moodle["categoria"], $moodle["id"], $moodle["nome"], $moodle["visivel"]), false);
                         $count['inserido']++;
                         echo '<dt class="text-success">' . $count['inserido'] . ' - Inserido</dt><dd class="text-success">' . $identificador . '</dd>';
                         fwrite($fp, date("d/m/Y H:i:s") . ' - ' . $count['inserido'] . ' - Inserido - ' . $identificador . "\n");

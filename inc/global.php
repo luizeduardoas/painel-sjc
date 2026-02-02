@@ -22,7 +22,7 @@ define('SYS_VERSAO', '1.0');
 define('SYS_TEMA', 'ace');
 define('SYS_TEMA_GLOBAL', 'global');
 define('SYS_GENESIS', 'min');
-define('SYS_SEGURANCA_LIBERADA', 'V');
+define('SYS_SEGURANCA_LIBERADA', 'F');
 define('SYS_LOGIN_SESSAO_UNICA', 'ON');
 define('SYS_MINIFY_TEMA', false);
 define('SYS_LIB_DEFAULT', 'php.js,genesis,jalert,cookie');

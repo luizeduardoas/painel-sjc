@@ -14,11 +14,9 @@ $header->addTheme(Theme::addLib(array("multiselect")));
 $header->show(false, $breadcrumb);
 /* -------------------------------------------------------------------------- */
 
-$mysql = new GDbMysql();
-$opt_niv_var_nome = $mysql->executeCombo("SELECT niv_int_codigo, niv_var_hierarquia FROM nivel ORDER BY niv_var_hierarquia, niv_int_nivel;");
-
+$opt_niv_var_nome = carregarComboNiveis();
 $codigosNivel = explode(",", buscarCookie("filtro_nivel"));
-if (count($codigosNivel) == 0) {
+if (count($codigosNivel) == 0 || (isset($codigosNivel[0]) && $codigosNivel[0] == '')) {
     $codigosNivel = array_keys($opt_niv_var_nome);
 }
 
@@ -42,13 +40,14 @@ $html .= '<div class="col-lg-4 col-xs-12 no-padding-left">';
 $html .= $form->addSelect("filtro_tipo", $__arrayTipoAcesso, buscarCookie("filtro_tipo", "-1"), "Tipo de Acesso", array("class" => "form-control selects chosen-select", "validate" => "([~] != -1)|Obrigatório"), array("class" => "required"));
 $html .= '<div class="space space-8"></div>';
 $html .= '</div>';
-global $__arraySimNao;
+global $__arrayAgrupamentoAcessos;
 $html .= '<div class="col-lg-3 col-xs-12 no-padding-left">';
-$html .= $form->addSelect("filtro_escola", $__arraySimNao, buscarCookie("filtro_escola", "-1"), "Por Escola", array("class" => "form-control selects chosen-select", "validate" => "([~] != -1)|Obrigatório"), array("class" => "required"));
+$html .= $form->addSelect("filtro_agrupamento", $__arrayAgrupamentoAcessos, buscarCookie("filtro_agrupamento", "-1"), "Agrupar", array("class" => "form-control selects chosen-select", "validate" => "([~] != -1)|Obrigatório"), array("class" => "required"));
 $html .= '<div class="space space-8"></div>';
 $html .= '</div>';
 $html .= '<div class="col-lg-5 col-xs-12 no-padding-left">';
-$html .= $form->addDateRange("filtro_periodo", "Período:", false, array("value" => buscarCookie("filtro_periodo", date("d/m/Y") . ' - ' . date("d/m/Y")), "class" => "form-control campo", "placeholder" => "Período de tempo", "style" => "width: 180px;"), array("'maxDate'" => "'" . date("d/m/Y") . "'"), array("ano" => true, "mes" => true), array("class" => "required"));
+global $__paramDataRangeRelatorio;
+$html .= $form->addDateRange("filtro_periodo", "Período:", false, array("value" => buscarCookie("filtro_periodo", date("d/m/Y") . ' - ' . date("d/m/Y")), "class" => "form-control campo", "placeholder" => "Período de tempo", "style" => "width: 180px;"), $__paramDataRangeRelatorio, array("ano" => true, "mes" => true), array("class" => "required"));
 $html .= '<div class="space space-8"></div>';
 $html .= '</div>';
 $html .= '<div class="col-xs-12 no-padding-left">';
@@ -57,11 +56,16 @@ $html .= '<div class="space space-8"></div>';
 $html .= '</div>';
 $html .= '<div class="col-xs-12 no-padding-left" id="div_curso" style="display:none;">';
 $html .= '</div>';
+global $__arrayOrdemAcessos;
+$html .= '<div class="col-lg-4 col-xs-12 no-padding-left">';
+$html .= $form->addSelect("ordenacao", $__arrayOrdemAcessos, buscarCookie("ordenacao", "QD"), "Ordenação", array("class" => "form-control selects", "validate" => "([~] != -1)|Obrigatório"), array("class" => "required"));
+$html .= '<div class="space space-8"></div>';
+$html .= '</div>';
 $html .= '</fieldset>';
 $html .= carregarBotoes("G");
 $html .= $form->close();
 $html .= gerarRodape(array('tipo' => 'box', 'col' => 6));
-$html .= gerarCabecalho(array('tipo' => 'box', 'col' => 6, 'fa' => 'bar-chart', 'titulo' => 'Tabelas de acessos'));
+$html .= gerarCabecalho(array('tipo' => 'box', 'col' => 6, 'fa' => 'table', 'titulo' => 'Tabelas de acessos'));
 $html .= '<div id="div_load" class="p-4 divLoadTabela">';
 $html .= carregarMensagem("A", "Selecione os filtros desejados e clique em Gerar.", 12, false);
 $html .= '</div>';
@@ -83,14 +87,19 @@ $footer->show();
             window.open("<?php echo URL_SYS . 'tabelas/t_acessos/'; ?>excel.php");
         });
         loadNivel();
+        jQuery("#filtro_agrupamento").change(function () {
+            atualizarOrdenacao();
+        });
+        atualizarOrdenacao();
     });
 
     function salvarFiltros() {
         setParametroCookie('filtro_tipo', jQuery('#filtro_tipo').val());
-        setParametroCookie('filtro_escola', jQuery('#filtro_escola').val());
-        setParametroCookie('filtro_nivel', jQuery('#filtro_nivel').val());
+        setParametroCookie('filtro_agrupamento', jQuery('#filtro_agrupamento').val());
+        setParametroCookieGeral('filtro_nivel', jQuery('#filtro_nivel').val());
         setParametroCookieGeral('filtro_curso', jQuery('#cur_int_codigo').val());
         setParametroCookie("filtro_periodo", jQuery("#filtro_periodo").val());
+        setParametroCookie('ordenacao', jQuery('#ordenacao').val());
     }
 
     function loadNivel() {
@@ -100,7 +109,27 @@ $footer->show();
         jQuery('.chosen-container').width("100%");
     }
 
-    function carregarTabela(esc_int_codigo) {
-        jQuery.gAjax.load("<?php echo URL_SYS . 'tabelas/t_acessos/'; ?>load.php", {filtro_curso: jQuery("#cur_int_codigo").val(), filtro_tipo: jQuery("#filtro_tipo").val(), filtro_escola: jQuery("#filtro_escola").val(), filtro_periodo: jQuery("#filtro_periodo").val(), esc_int_codigo: esc_int_codigo}, "#div_load");
+    function atualizarOrdenacao() {
+        var agrupamento = jQuery('#filtro_agrupamento').val();
+        var $ordenacao = jQuery('#ordenacao');
+        $ordenacao.find('option:not([value="-1"])').hide().prop('disabled', true);
+        if (agrupamento === 'E') {
+            // Escola: Permite Escola (E) e Quantidade (Q)
+            $ordenacao.find('option[value^="E"], option[value^="Q"]').show().prop('disabled', false);
+        } else if (agrupamento === 'D') {
+            // Data: Permite Data (D) e Quantidade (Q)
+            $ordenacao.find('option[value^="D"], option[value^="Q"]').show().prop('disabled', false);
+        } else if (agrupamento === 'H') {
+            // Horário: Permite Horário (H) e Quantidade (Q)
+            $ordenacao.find('option[value^="H"], option[value^="Q"]').show().prop('disabled', false);
+        }
+        // Validação: Se a opção atualmente selecionada foi desabilitada, 
+        if ($ordenacao.find('option:selected').css('display') === 'none') {
+            $ordenacao.val("-1");
+        }
+    }
+
+    function carregarTabela(tipo, codigo) {
+        jQuery.gAjax.load("<?php echo URL_SYS . 'tabelas/t_acessos/'; ?>load.php", {filtro_curso: jQuery("#cur_int_codigo").val(), filtro_tipo: jQuery("#filtro_tipo").val(), filtro_agrupamento: jQuery("#filtro_agrupamento").val(), filtro_periodo: jQuery("#filtro_periodo").val(), ordenacao: jQuery("#ordenacao").val(), tipo: tipo, codigo: codigo}, "#div_load");
     }
 </script>

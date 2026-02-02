@@ -1,15 +1,19 @@
 <?php
 
-require_once(ROOT_SYS_CLASS . "avacurso.php");
+require_once(ROOT_SYS_CLASS . "avaCurso.php");
+GF::import(array("nivel"));
 
 class AvaCursoDao {
 
     private $sql;
     private $sqlCount;
+    private $cur_cha_visivel;
 
     function __construct() {
-        $this->sql = "SELECT esc.cur_int_codigo,esc.cur_var_nome FROM escola esc ";
-        $this->sqlCount = "SELECT COUNT(cur_int_codigo) FROM escola esc ";
+        global $__arraySimNao;
+        $this->cur_cha_visivel = gerarCase("cur_cha_visivel", $__arraySimNao, false);
+        $this->sql = "SELECT cur.cur_int_codigo,cur.cur_var_nome,cur.cur_int_courseid,cur.niv_int_codigo,$this->cur_cha_visivel  FROM ava_curso cur ";
+        $this->sqlCount = "SELECT COUNT(cur_int_codigo) FROM ava_curso cur ";
     }
 
     public function selectKeys($where = false, $param = false, $loadObj = true) {
@@ -84,13 +88,13 @@ class AvaCursoDao {
         return $qtd;
     }
 
-    /** @param Escola $escola */
-    public function ifExists($escola) {
+    /** @param Curso $curso */
+    public function ifExists($curso) {
         $retorno = false;
-        $param = array("i", $escola->getCur_int_codigo());
+        $param = array("i", $curso->getCur_int_codigo());
         try {
             $mysql = new GDbMysql();
-            $mysql->execute($this->sqlCount . " WHERE esc.cur_int_codigo = ? ", $param);
+            $mysql->execute($this->sqlCount . " WHERE cur.cur_int_codigo = ? ", $param);
             $mysql->fetch();
             $retorno = ($mysql->res[0] > 0) ? true : false;
             $mysql->close();
@@ -102,28 +106,40 @@ class AvaCursoDao {
         return $retorno;
     }
 
-    /** @param Escola $escola */
-    public function selectById($escola, $loadObj = true) {
-        $param = array("i", $escola->getCur_int_codigo());
+    /** @param Curso $curso */
+    public function selectById($curso, $loadObj = true) {
+        $param = array("i", $curso->getCur_int_codigo());
         try {
             $mysql = new GDbMysql();
-            $mysql->execute($this->sql . " WHERE esc.cur_int_codigo = ? ", $param);
+            $mysql->execute($this->sql . " WHERE cur.cur_int_codigo = ? ", $param);
             if ($mysql->fetch()) {
-                $escola = $this->carregarObjeto($mysql, $loadObj);
+                $curso = $this->carregarObjeto($mysql, $loadObj);
             }
             $mysql->close();
         } catch (GDbException $e) {
             echo $e->getError();
             salvarEvento('E', $e->getError(), json_encode($param, JSON_UNESCAPED_UNICODE));
         }
-        return $escola;
+        return $curso;
     }
 
     private function carregarObjeto($mysql, $loadObj = true) {
-        $escola = new Escola();
-        $escola->setCur_int_codigo($mysql->res["cur_int_codigo"]);
-        $escola->setCur_var_nome($mysql->res["cur_var_nome"]);
+        $curso = new AvaCurso();
+        $curso->setCur_int_codigo($mysql->res["cur_int_codigo"]);
+        $curso->setCur_var_nome($mysql->res["cur_var_nome"]);
+        $curso->setCur_int_courseid($mysql->res["cur_int_courseid"]);
 
-        return $escola;
+        $nivel = new Nivel();
+        $nivel->setNiv_int_codigo($mysql->res["niv_int_codigo"]);
+        if ($loadObj) {
+            $nivelDao = new NivelDao();
+            $nivel = $nivelDao->selectById($nivel);
+        }
+        $curso->setNivel($nivel);
+
+        $curso->setCur_cha_visivel($mysql->res["cur_cha_visivel"]);
+        $curso->setCur_cha_visivel_format($mysql->res["cur_cha_visivel_format"]);
+
+        return $curso;
     }
 }

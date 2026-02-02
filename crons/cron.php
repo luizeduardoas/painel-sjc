@@ -14,6 +14,7 @@ include_once("cronescola.php");
 include_once("croncurso.php");
 include_once("cronusuario.php");
 include_once("cronmatricula.php");
+include_once("cronmodulo.php");
 include_once("cronacesso.php");
 include_once("cronconclusao.php");
 

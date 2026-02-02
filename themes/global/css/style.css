@@ -7,7 +7,7 @@
 }
 .divLoadCartao {
     min-height: 200px;
-    padding: 20px; 
+    padding: 20px;
     background: #333;
     box-shadow: 0px 0px 20px inset #000;
     max-width: 600px;
@@ -129,7 +129,7 @@ div.zabuto_calendar div.legend {
 @media (max-width:1200px){
     .tituloPagina {
         font-size: 20pt;
-    } 
+    }
 }
 
 .limiterBox{
@@ -180,4 +180,40 @@ dt.erro, dd.erro {
 }
 .g-recaptcha div {
     margin: auto;
+}
+.__pointer {
+    cursor: pointer;
+}
+/* Estilo para o item na lista suspensa do MultiSelect */
+.ui-multiselect-checkboxes li.disabled,
+.ui-multiselect-checkboxes li.item-desabilitado {
+    opacity: 0.5;
+    background-color: #f4f4f4 !important;
+    cursor: not-allowed !important;
+    text-decoration: line-through;
+    color: #999;
+}
+
+/* Garante que o checkbox dentro do item também pareça desabilitado */
+.ui-multiselect-checkboxes li.disabled input {
+    cursor: not-allowed;
+}
+
+/* Estilo para o item na lista do Bootstrap Multiselect */
+.multiselect-container li.item-desabilitado {
+    background-color: #f5f5f5 !important;
+    opacity: 0.6;
+    cursor: not-allowed !important;
+}
+
+.multiselect-container li.item-desabilitado a,
+.multiselect-container li.item-desabilitado label {
+    pointer-events: none !important; /* Bloqueia o clique no label e checkbox */
+    text-decoration: line-through;
+    color: #999 !important;
+}
+
+/* Oculta o checkbox para itens inativos para evitar confusão */
+.multiselect-container li.item-desabilitado input[type="checkbox"] {
+    display: none !important;
 }

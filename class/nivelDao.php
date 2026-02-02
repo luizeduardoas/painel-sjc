@@ -6,9 +6,12 @@ class NivelDao {
 
     private $sql;
     private $sqlCount;
+    private $niv_cha_visivel;
 
     function __construct() {
-        $this->sql = "SELECT niv.niv_int_codigo,niv_var_identificador,niv.niv_var_nome,niv.niv_int_nivel,niv.niv_var_identificador_pai,niv.niv_var_hierarquia FROM nivel niv ";
+        global $__arraySimNao;
+        $this->niv_cha_visivel = gerarCase("niv_cha_visivel", $__arraySimNao, false);
+        $this->sql = "SELECT niv.niv_int_codigo,niv_var_identificador,niv.niv_var_nome,niv.niv_int_nivel,niv.niv_var_identificador_pai,niv.niv_var_hierarquia,$this->niv_cha_visivel FROM nivel niv ";
         $this->sqlCount = "SELECT COUNT(niv_int_codigo) FROM nivel niv ";
     }
 
@@ -162,6 +165,8 @@ class NivelDao {
         $nivel->setNiv_int_nivel($mysql->res["niv_int_nivel"]);
         $nivel->setNiv_var_identificador_pai($mysql->res["niv_var_identificador_pai"]);
         $nivel->setNiv_var_hierarquia($mysql->res["niv_var_hierarquia"]);
+        $nivel->setNiv_cha_visivel($mysql->res["niv_cha_visivel"]);
+        $nivel->setNiv_cha_visivel_format($mysql->res["niv_cha_visivel_format"]);
 
         return $nivel;
     }

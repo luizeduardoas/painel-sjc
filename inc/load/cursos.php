@@ -19,7 +19,7 @@ if ($filtro_nivel != '') {
     $opt_cur_int_codigo = $mysql->executeCombo($query);
 
     $codigosCurso = explode(",", buscarCookie("filtro_curso"));
-    if (count($codigosCurso) == 0) {
+    if (count($codigosCurso) == 0 || (isset($codigosCurso[0]) && $codigosCurso[0] == '')) {
         $codigosCurso = array_keys($opt_cur_int_codigo);
     }
 

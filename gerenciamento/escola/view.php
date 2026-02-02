@@ -23,7 +23,7 @@ $escola = new Escola();
 $escola->setEsc_int_codigo($_id);
 $escolaDao = new EscolaDao();
 $escola = $escolaDao->selectById($escola);
-if (is_null($escola->getEsc_var_ip())) {
+if (is_null($escola->getEsc_var_nome())) {
     echo carregarPagina500();
 } else {
     $html .= gerarCabecalho(array(

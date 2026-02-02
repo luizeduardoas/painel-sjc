@@ -23,7 +23,7 @@ $curso = new AvaCurso();
 $curso->setCur_int_codigo($_id);
 $cursoDao = new AvaCursoDao();
 $curso = $cursoDao->selectById($curso);
-if (is_null($curso->getCur_var_ip())) {
+if (is_null($curso->getCur_var_nome())) {
     echo carregarPagina500();
 } else {
     $html .= gerarCabecalho(array(
@@ -37,7 +37,9 @@ if (is_null($curso->getCur_var_ip())) {
     $html .= $form->addInput("hidden", "cur_int_codigo", false, array("value" => $curso->getCur_int_codigo()));
     $arr = array();
     $arr['Código'] = formataDadoVazio($curso->getCur_int_codigo());
+    $arr['Identificador'] = formataDadoVazio($curso->getCur_int_courseid());
     $arr['Nome'] = formataDadoVazio($curso->getCur_var_nome());
+    $arr['Visível'] = '<span class="label label-sm label-' . labelStatus($curso->getCur_cha_visivel()) . ' label-white middle"> ' . $curso->getCur_cha_visivel_format() . '</span>';
     $html .= gerarCamposVisualizacao($arr);
 
     $arrayBotoes = array();

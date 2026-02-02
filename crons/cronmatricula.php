@@ -61,7 +61,7 @@ function atualizarMatricula($fp) {
         flush();
         $arrMoodle = array();
         $mysqlMoodle = new GDbMysqlMoodle();
-        $mysqlMoodle->execute("SELECT * FROM vw_painel_matriculas");
+        $mysqlMoodle->execute("SELECT * FROM vw_painel_matriculas WHERE courseid > 1 ORDER BY courseid, userid");
         echo '<dt class="text-info">Moodle:</dt><dd class="text-info">' . $mysqlMoodle->numRows() . '</dd>';
         ob_flush();
         flush();

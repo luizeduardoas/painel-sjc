@@ -97,7 +97,7 @@ $__arrayValidado = array(
 );
 
 $__arrayCores = array(
-    '#8DD3C7', '#D9D9D9', '#BEBADA', '#FB8072', '#80B1D3', '#FDB462', '#B3DE69', '#FCCDE5', '#BC80BD', '#FFFFB3'
+    '#8DD3C7', '#80B1D3', '#FB8072', '#D9D9D9', '#BEBADA', '#FDB462', '#B3DE69', '#FCCDE5', '#BC80BD', '#FFFFB3'
 );
 
 $__arrayAcaoAuditoria = array(
@@ -114,20 +114,88 @@ $__paramDataNascimento = array(
     "startView" => "'decade'"
 );
 $__paramDataLog = array(
-    "startDate" => "'01-01-2025'",
+    "startDate" => "'01-01-2022'",
     "endDate" => "'0d'"
 );
+$__paramDataRangeRelatorio = array(
+    "minDate" => "'01-01-2022'",
+    "maxDate" => '"' . date("d/m/Y") . '"'
+);
+
 // </editor-fold>
 // 
 // <editor-fold defaultstate="collapsed" desc="Específicos">
+$__arrayTipoProgresso = array(
+    "C" => "Conclusão",
+    "V" => "Apenas Visualização"
+);
+$__arrayAgrupamentoProgresso = array(
+    "E" => "por Escola",
+    "C" => "por Curso",
+    "A" => "por Aluno"
+);
+$__arrayOrdemProgresso = array(
+    "QC" => "por Quantidade Crescente",
+    "QD" => "por Quantidade Decrescente",
+    "EC" => "por Escola Crescente",
+    "ED" => "por Escola Decrescente",
+    "CC" => "por Curso Crescente",
+    "CD" => "por Curso Decrescente",
+    "AC" => "por Aluno Crescente",
+    "AD" => "por Aluno Decrescente"
+);
 $__arrayTipoAcesso = array(
     "EA" => "Entrar no AVA",
     "SA" => "Sair do AVA",
     "EC" => "Entrou no Curso"
 );
-//$__arrayTipoGrafico = array(
-//    "qtd_por_dia" => "Quantidade por Dia"   
-//);
+$__arrayAgrupamentoNaoAcesso = array(
+    "E" => "por Escola",
+    "C" => "por Curso",
+    "A" => "por Aluno"
+);
+$__arrayOrdemNaoAcesso = array(
+    "QC" => "por Quantidade Crescente",
+    "QD" => "por Quantidade Decrescente",
+    "EC" => "por Escola Crescente",
+    "ED" => "por Escola Decrescente",
+    "CC" => "por Curso Crescente",
+    "CD" => "por Curso Decrescente",
+    "AC" => "por Aluno Crescente",
+    "AD" => "por Aluno Decrescente"
+);
+$__arrayAgrupamentoAcessos = array(
+    "E" => "por Escola",
+    "D" => "por Data",
+    "H" => "por Horário"
+);
+$__arrayOrdemAcessos = array(
+    "DC" => "por Data Crescente",
+    "DD" => "por Data Decrescente",
+    "HC" => "por Horário Crescente",
+    "HD" => "por Horário Decrescente",
+    "QC" => "por Quantidade Crescente",
+    "QD" => "por Quantidade Decrescente",
+    "EC" => "por Escola Crescente",
+    "ED" => "por Escola Decrescente"
+);
+$__arrayAgrupamentoMatriculas = array(
+    "E" => "por Escola",
+    "C" => "por Curso"
+);
+$__arrayOrdemMatriculas = array(
+    "CC" => "por Curso Crescente",
+    "CD" => "por Curso Decrescente",
+    "QC" => "por Quantidade Crescente",
+    "QD" => "por Quantidade Decrescente",
+    "EC" => "por Escola Crescente",
+    "ED" => "por Escola Decrescente"
+);
+$__arrayGraficos = array(
+    "barras" => "Barras",
+    "pizza" => "Pizza"
+);
+
 // </editor-fold>
 // <editor-fold desc="Menu">
 $__arrMinhaConta = array(
@@ -159,6 +227,7 @@ $__arrAdministracao = array(
     "CRONESCOLA" => "Atualização de Escolas",
     "CRONNIVEL" => "Atualização de Estrutura Organizacional",
     "CRONMATRICULA" => "Atualização de Matrículas",
+    "CRONMODULO" => "Atualização de Módulos",
     "CRONUSUARIO" => "Atualização de Usuários",
     "CRONARQUIVOS" => "Limpeza de Arquivos",
 );
@@ -166,13 +235,15 @@ $__arrCadastro = array(
     "USUARIO" => "Usuários"
 );
 $__arrGerenciamento = array(
+    "AVAUSUARIO" => "Usuários",
     "CURSO" => "Cursos",
     "ESCOLA" => "Escolas",
-    "NIVEL" => "Estrutura Hierárquica"
+    "NIVEL" => "Estrutura Organizacional",
+    "MATRICULA" => "Matrículas",
+    "MODULO" => "Módulos"
 );
 $__arrGraficos = array(
     "G_ACESSOS" => "Acessos",
-    "G_NAOACESSO" => "Não Acesso",
     "G_PROGRESSO" => "Progresso/Desempenho",
     "G_MATRICULAS" => "Matrículas"
 );
@@ -183,15 +254,16 @@ $__arrTabelas = array(
     "T_MATRICULAS" => "Matrículas"
 );
 $__arrMonitoramento = array(
-    "ACESSO" => "Acessos dos Usuários",
+    "ACESSO" => "Logs de Acessos dos Usuários",
     "CRON_ACESSO" => "Logs da CRON de atualização de acessos",
-    "CRON_ARQUIVOS" => "Logs da CRON Limpeza de arquivos",
     "CRON_CONCLUSAO" => "Logs da CRON de atualização de conclusões",
     "CRON_CURSO" => "Logs da CRON de atualização de cursos",
     "CRON_ESCOLA" => "Logs da CRON de atualização de escolas",
-    "CRON_MATRICULA" => "Logs da CRON de atualização de matrículas",
     "CRON_NIVEL" => "Logs da CRON de atualização de estrutura organizacional",
-    "CRON_USUARIO" => "Logs da CRON de atualização de usuários"
+    "CRON_MATRICULA" => "Logs da CRON de atualização de matrículas",
+    "CRON_MODULO" => "Logs da CRON de atualização de módulos",
+    "CRON_USUARIO" => "Logs da CRON de atualização de usuários",
+    "CRON_ARQUIVOS" => "Logs da CRON Limpeza de arquivos"
 );
 $__arrRelatorio = array(
     "LISTAGENS" => array(

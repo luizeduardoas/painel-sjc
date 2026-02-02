@@ -7,6 +7,8 @@ class AvaCurso {
     private $cur_int_courseid;
     /* @var $nivel Nivel */
     private $nivel;
+    private $cur_cha_visivel;
+    private $cur_cha_visivel_format;
 
     public function getCur_int_codigo() {
         return $this->cur_int_codigo;
@@ -42,6 +44,22 @@ class AvaCurso {
         $this->nivel = $nivel;
     }
 
+    public function getCur_cha_visivel() {
+        return $this->cur_cha_visivel;
+    }
+
+    public function getCur_cha_visivel_format() {
+        return $this->cur_cha_visivel_format;
+    }
+
+    public function setCur_cha_visivel($cur_cha_visivel) {
+        $this->cur_cha_visivel = $cur_cha_visivel;
+    }
+
+    public function setCur_cha_visivel_format($cur_cha_visivel_format) {
+        $this->cur_cha_visivel_format = $cur_cha_visivel_format;
+    }
+
     public function getArray() {
         $array = array();
         $array["cur_int_codigo"] = $this->cur_int_codigo;
@@ -49,6 +67,8 @@ class AvaCurso {
         $array["cur_int_courseid"] = $this->cur_int_courseid;
         $array["niv_int_codigo"] = $this->nivel->getNiv_int_codigo();
         $array["nivel"] = $this->nivel->getDescricao();
+        $array["cur_cha_visivel"] = $this->cur_cha_visivel;
+        $array["cur_cha_visivel_format"] = $this->cur_cha_visivel_format;
 
         return $array;
     }
@@ -57,8 +77,9 @@ class AvaCurso {
         $array = array();
         $array["Código"] = $this->cur_int_codigo;
         $array["Nome"] = $this->cur_var_nome;
-        $array["ID Curso"] = $this->cur_int_courseid;
+        $array["Identificador"] = $this->cur_int_courseid;
         $array["Nível"] = $this->nivel->getDescricao();
+        $array["Visível"] = $this->cur_cha_visivel_format;
 
         return $array;
     }

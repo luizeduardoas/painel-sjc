@@ -882,20 +882,28 @@ function montarArvore() {
         foreach ($arr as $nivel) {
             $nivelDao2 = new NivelDao();
             $lista[$nivel->getNiv_var_identificador()] = array("text" => $nivel->getNiv_var_nome(), "type" => $nivelDao2->ifExistsFilho($nivel) ? "folder" : "item");
+            if ($nivel->getNiv_cha_visivel() == 'N')
+                $lista[$nivel->getNiv_var_identificador()]["additionalParameters"]["class"] = 'tree-branch-disabled';
             $arr2 = $nivelDao2->select("WHERE niv_int_nivel = 2 AND niv_var_identificador_pai = ? ORDER BY niv_var_nome;", array("i", $nivel->getNiv_var_identificador()));
             if (count($arr2)) {
                 foreach ($arr2 as $nivel2) {
                     $nivelDao3 = new NivelDao();
                     $lista[$nivel->getNiv_var_identificador()]["additionalParameters"]["children"][$nivel2->getNiv_var_identificador()] = array("text" => $nivel2->getNiv_var_nome(), "type" => $nivelDao3->ifexistsfilho($nivel2) ? "folder" : "item");
+                    if ($nivel2->getNiv_cha_visivel() == 'N')
+                        $lista[$nivel->getNiv_var_identificador()]["additionalParameters"]["children"][$nivel2->getNiv_var_identificador()]["additionalParameters"]["class"] = 'tree-branch-disabled';
                     $arr3 = $nivelDao3->select("WHERE niv_int_nivel = 3 AND niv_var_identificador_pai = ? ORDER BY niv_var_nome;", array("i", $nivel2->getNiv_var_identificador()));
                     if (count($arr3)) {
                         foreach ($arr3 as $nivel3) {
                             $nivelDao4 = new NivelDao();
                             $lista[$nivel->getNiv_var_identificador()]["additionalParameters"]["children"][$nivel2->getNiv_var_identificador()]["additionalParameters"]["children"][$nivel3->getNiv_var_identificador()] = array("text" => $nivel3->getNiv_var_nome(), "type" => $nivelDao4->ifexistsfilho($nivel3) ? "folder" : "item");
+                            if ($nivel3->getNiv_cha_visivel() == 'N')
+                                $lista[$nivel->getNiv_var_identificador()]["additionalParameters"]["children"][$nivel2->getNiv_var_identificador()]["additionalParameters"]["children"][$nivel3->getNiv_var_identificador()]["additionalParameters"]["class"] = 'tree-branch-disabled';
                             $arr4 = $nivelDao4->select("WHERE niv_int_nivel = 4 AND niv_var_identificador_pai = ? ORDER BY niv_var_nome;", array("i", $nivel3->getNiv_var_identificador()));
                             if (count($arr4)) {
                                 foreach ($arr4 as $nivel4) {
                                     $lista[$nivel->getNiv_var_identificador()]["additionalParameters"]["children"][$nivel2->getNiv_var_identificador()]["additionalParameters"]["children"][$nivel3->getNiv_var_identificador()]["additionalParameters"]["children"][$nivel4->getNiv_var_identificador()] = array("text" => $nivel4->getNiv_var_nome(), "type" => "item");
+                                    if ($nivel4->getNiv_cha_visivel() == 'N')
+                                        $lista[$nivel->getNiv_var_identificador()]["additionalParameters"]["children"][$nivel2->getNiv_var_identificador()]["additionalParameters"]["children"][$nivel3->getNiv_var_identificador()]["additionalParameters"]["children"][$nivel4->getNiv_var_identificador()]["additionalParameters"]["class"] = 'tree-branch-disabled';
                                 }
                             }
                         }
@@ -905,6 +913,27 @@ function montarArvore() {
         }
     }
     return $lista;
+}
+
+/**
+ * Retorna um array para usar como combobox de listagem de níveis
+ * 
+ * @return array
+ */
+function carregarComboNiveis() {
+    $mysql = new GDbMysql();
+    //return $mysql->executeCombo("SELECT niv_int_codigo, CONCAT(CASE niv_cha_visivel WHEN 'N' THEN '###' ELSE '' END, niv_var_hierarquia) FROM nivel ORDER BY niv_var_hierarquia, niv_int_nivel;");
+    return $mysql->executeCombo("SELECT niv_int_codigo, niv_var_hierarquia FROM nivel ORDER BY niv_var_hierarquia, niv_int_nivel;");
+}
+
+/**
+ * Retorna a quantidade de cursos existentes
+ * 
+ * @return int
+ */
+function locaQtdCursos() {
+    $mysql = new GDbMysql();
+    return $mysql->executeValue("SELECT COUNT(*) FROM ava_curso;");
 }
 
 // </editor-fold>
@@ -956,7 +985,7 @@ function seNuloOuVazioOuZero($dado) {
  * @return boolean
  */
 function seNuloOuVazioOuZeroOuMenosUm($dado) {
-    if ((is_null($dado)) || (trim($dado) == "") || (trim($dado) == "0") || (trim($dado) == "-1"))
+    if (!isset($dado) || (is_null($dado)) || (trim($dado) == "") || (trim($dado) == "0") || (trim($dado) == "-1"))
         return true;
     else
         return false;
@@ -3963,20 +3992,58 @@ function carregarTituloLista($imagem, $titulo, $lista) {
 /**
  * Carregar script para gráfico de pizza 
  * 
- * @global type $__arrayStatusMatricula
- * @global type $__arrayCorStatusMatricula
+ * @global type $__arrayCores
  * @param string $tipo
  * @return string
  */
 function carregarGraficoPizza($tipo) {
     $mysql = new GDbMysql();
     $grafico = 'var data = [];';
-    if (($tipo == 'matriculas')) {
-        global $__arrayStatusMatricula, $__arrayCorStatusMatricula;
-        $arrMatriculas = $mysql->executeCombo("SELECT mat_cha_status, COUNT(*) FROM matricula GROUP BY mat_cha_status;");
+    if (($tipo == 'usuarios')) {
+        global $__arrayCores;
+        $arrUsuarios = $mysql->executeCombo("SELECT usu_var_cargo, COUNT(*) FROM ava_usuario GROUP BY usu_var_cargo ORDER BY COUNT(*) DESC;");
         $grafico = 'var data = [';
-        foreach ($arrMatriculas as $mat_cha_status => $qtd) {
-            $grafico .= '   {label: "' . $__arrayStatusMatricula[$mat_cha_status] . '", data: ' . $qtd . ', color: "' . $__arrayCorStatusMatricula[$mat_cha_status] . '"},';
+
+        $normalizado = [];
+        foreach ($arrUsuarios as $cargo => $qtd) {
+            $cargo = strtoupper($cargo);
+
+            // Regras de Normalização
+            if (strpos($cargo, 'PROFESSOR') !== false) {
+                $label = "PROFESSOR";
+            } elseif (strpos($cargo, 'CUIDADOR') !== false) {
+                $label = "CUIDADOR INFANTIL";
+            } elseif (strpos($cargo, 'AGENTE EDUCADOR') !== false) {
+                $label = "AGENTE EDUCADOR";
+            } elseif (strpos($cargo, 'COORDENADOR') !== false) {
+                $label = "COORDENADOR";
+            } elseif (strpos($cargo, 'DIRETOR') !== false) {
+                $label = "DIRETORIA";
+            } else {
+                // Pega a primeira palavra se não cair nas regras acima
+                $partes = explode(' ', $cargo);
+                $label = $partes[0];
+            }
+
+            if (!isset($normalizado[$label]))
+                $normalizado[$label] = 0;
+            $normalizado[$label] += $qtd;
+        }
+
+        // Ordena do maior para o menor
+        arsort($normalizado);
+        // Separa os 5 primeiros e agrupa o restante
+        $top5 = array_slice($normalizado, 0, 5, true);
+        $outros_soma = array_sum(array_slice($normalizado, 5));
+
+        if ($outros_soma > 0) {
+            $top5["OUTROS"] = $outros_soma;
+        }
+
+        $i = 0;
+        foreach ($top5 as $label => $valor) {
+            $grafico .= ' {label: "' . $label . '", data: ' . $valor . ', color: "' . $__arrayCores[$i] . '"},';
+            $i++;
         }
         $grafico .= '];';
     }
@@ -4127,7 +4194,7 @@ function minifierHtml($code) {
  * @param string $styleTituloCentral Default: false
  * @return string
  */
-function gerarTabela($arrTitulos, $arrDados, $arrFooter = array(), $arrFormats = array(), $tituloCentral = false, $arrStyleTitulos = false, $styleTituloCentral = false) {
+function gerarTabela($arrTitulos, $arrDados, $arrFooter = array(), $arrFormats = array(), $tituloCentral = false, $arrStyleTitulos = false, $styleTituloCentral = false, $link = null) {
     $html = '';
     $html .= '<table style="margin-bottom: 0;" class="table table-responsive table-bordered table-hover table-striped">';
     $html .= '<thead>';
@@ -4175,6 +4242,9 @@ function gerarTabela($arrTitulos, $arrDados, $arrFooter = array(), $arrFormats =
         $html .= '</tfoot>';
     }
     $html .= '</table>';
+    if (!seNuloOuVazio($link)) {
+        $html .= $link;
+    }
     return $html;
 }
 
@@ -4304,15 +4374,19 @@ function arrayToTable($arrTitulos, $arrDados, $arrFooter) {
  * @param array $arrDados
  * @return string
  */
-function gerarDadosGraficoLinha($arrTitulos, $arrDados) {
+function gerarDadosGrafico($arrTitulos, $arrDados) {
     $grafico = 'var coluna = []; var linha = []; ';
+    $temDados = false;
     foreach ($arrDados as $dado) {
         foreach ($dado as $key => $val) {
             switch ($key) {
                 case "QTD":
+                    $temDados = true;
                     $grafico .= 'linha.push(' . $val . '); ';
                     break;
                 case "DATA":
+                case "CURSO":
+                    $temDados = true;
                     $grafico .= 'coluna.push("' . $val . '"); ';
                     break;
                 default:
@@ -4320,7 +4394,7 @@ function gerarDadosGraficoLinha($arrTitulos, $arrDados) {
             }
         }
     }
-    return $grafico;
+    return ($temDados) ? $grafico : null;
 }
 
 /**

@@ -8,6 +8,8 @@ class Nivel {
     private $niv_int_nivel;
     private $niv_var_identificador_pai;
     private $niv_var_hierarquia;
+    private $niv_cha_visivel;
+    private $niv_cha_visivel_format;
 
     public function getNiv_int_codigo() {
         return $this->niv_int_codigo;
@@ -57,6 +59,22 @@ class Nivel {
         $this->niv_var_hierarquia = $niv_var_hierarquia;
     }
 
+    public function getNiv_cha_visivel() {
+        return $this->niv_cha_visivel;
+    }
+
+    public function getNiv_cha_visivel_format() {
+        return $this->niv_cha_visivel_format;
+    }
+
+    public function setNiv_cha_visivel($niv_cha_visivel) {
+        $this->niv_cha_visivel = $niv_cha_visivel;
+    }
+
+    public function setNiv_cha_visivel_format($niv_cha_visivel_format) {
+        $this->niv_cha_visivel_format = $niv_cha_visivel_format;
+    }
+
     public function getArray() {
         $array = array();
         $array["niv_int_codigo"] = $this->niv_int_codigo;
@@ -65,6 +83,8 @@ class Nivel {
         $array["niv_int_nivel"] = $this->niv_int_nivel;
         $array["niv_var_identificador_pai"] = $this->niv_var_identificador_pai;
         $array["niv_var_hierarquia"] = $this->niv_var_hierarquia;
+        $array["niv_cha_visivel"] = $this->niv_cha_visivel;
+        $array["niv_cha_visivel_format"] = $this->niv_cha_visivel_format;
 
         return $array;
     }
@@ -77,6 +97,7 @@ class Nivel {
         $array["Nível"] = $this->niv_int_nivel;
         $array["Pai"] = $this->niv_var_identificador_pai;
         $array["Hierarquia"] = $this->niv_var_hierarquia;
+        $array["Visível"] = $this->niv_cha_visivel_format;
         return $array;
     }
 

@@ -12,12 +12,16 @@ $filtro_nivel = $_POST["filtro_nivel"];
 if ($filtro_nivel != '-1')
     $filter->addFilter('AND', 'cur.niv_int_codigo', '=', 'i', $filtro_nivel);
 
+$filtro_visivel = $_POST["filtro_visivel"];
+if ($filtro_visivel != '-1')
+    $filter->addFilter('AND', 'cur.cur_cha_visivel', '=', 's', $filtro_visivel);
+
 $search = $_POST["search"]["value"];
 if (!empty($search)) {
     $filter->addLike("AND", array("cur_var_nome"), $search);
 }
 
-$arrColunas = array("", "cur_int_codigo", "cur_var_nome", "cur_int_courseid", "niv_int_codigo");
+$arrColunas = array("", "cur_int_codigo", "cur_var_nome", "cur_int_courseid", "niv_int_codigo", "cur_cha_visivel");
 
 $col = "cur_var_nome";
 if (isset($_POST["order"][0]["column"])) {
@@ -30,7 +34,7 @@ if (isset($_POST["order"][0]["dir"])) {
 $start = (isset($_POST["start"]) ? $_POST["start"] : 0);
 $length = (isset($_POST["length"]) ? $_POST["length"] : 99999999);
 $filter->setLimit($start, $length);
-$filter->setOrder(array($col => $ord, 'cur_int_codigo' => 'DESC'));
+$filter->setOrder(array($col => $ord));
 //$filter->setGroupBy("cur_int_codigo");
 
 try {
@@ -52,7 +56,8 @@ try {
                 $arr[$i][] = formataDadoVazio($curso->getCur_int_codigo());
                 $arr[$i][] = formataDadoVazio($curso->getCur_var_nome());
                 $arr[$i][] = formataDadoVazio($curso->getCur_int_courseid());
-                $arr[$i][] = formataDadoVazio($curso->getNivel()->getDescricao());
+                $arr[$i][] = $curso->getNivel()->getDescricao();
+                $arr[$i][] = '<span class="label label-sm label-' . labelStatus($curso->getCur_cha_visivel()) . ' label-white middle"> ' . $curso->getCur_cha_visivel_format() . '</span>';
                 $i++;
             }
         }

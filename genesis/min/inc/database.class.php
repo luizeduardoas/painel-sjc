@@ -239,6 +239,34 @@ class GDbMysql {
         return $array;
     }
 
+    /**
+     * Executa uma consulta com a query passada e retorna um array com os valores
+     *
+     * @param String $query Consulta sql Ex: SELECT * FROM tabela
+     * @param array $param[optional] Parametros mysqli_stmt_bind_param Ex: array('i', 10)
+     * @return array
+     */
+    public function executeListArray($query, $param = false, $colunas = array(0, 1)) {
+        $array = array();
+        try {
+            if ($param)
+                $this->execute($query, $param);
+            else
+                $this->execute($query);
+            while ($this->fetch()) {
+                $item = array();
+                foreach ($colunas as $coluna) {
+                    $item[$coluna] = $this->res[$coluna];
+                }
+                $array[] = $item;
+            }
+            $this->close();
+        } catch (GDbException $e) {
+            echo $e->getError();
+        }
+        return $array;
+    }
+
     public function fetch() {
         return mysqli_stmt_fetch($this->stmt);
     }

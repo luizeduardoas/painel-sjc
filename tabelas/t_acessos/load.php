@@ -14,7 +14,7 @@ $excel = false;
 include_once(ROOT_SYS_INC . "querys/tabelas_acessos.php");
 
 if (seNuloOuVazio($aviso)) {
-    echo gerarTabela($arrTitulos, $arrDados, $arrFooter, $arrFormats, $tituloCentral, $arrStyleTitulos, $styleTituloCentral);
+    echo gerarTabela($arrTitulos, $arrDados, $arrFooter, $arrFormats, $tituloCentral, $arrStyleTitulos, $styleTituloCentral, $link);
 } else {
     echo carregarMensagem("A", $aviso, 12, false);
 }

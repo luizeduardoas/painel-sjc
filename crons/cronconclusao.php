@@ -65,21 +65,22 @@ function atualizarConclusao($fp) {
 
         $qryCurso = "(SELECT cur_int_codigo FROM ava_curso WHERE cur_int_courseid = ?)";
         $qryUsuario = "(SELECT usu_int_codigo FROM ava_usuario WHERE usu_int_userid = ?)";
+        $qryModulo = "(SELECT mod_int_codigo FROM ava_modulo WHERE mod_int_course_module_id = ?)";
 
         $mysql = new GDbMysql();
         $ultimo = $mysql->executeValue("SELECT IFNULL(MAX(con_dti_datahora), '2022-01-01 00:00:00') FROM ava_conclusao;");
 
         $arrMoodle = array();
         $mysqlMoodle = new GDbMysqlMoodle();
-        $mysqlMoodle->execute("SELECT modulo, userid, courseid, datahora, visualizado, concluido FROM vw_painel_conclusoes WHERE datahora > ? ORDER BY datahora ASC LIMIT " . SYS_LIMIT_DADOS_CRON . ";", array("s", $ultimo));
+        $mysqlMoodle->execute("SELECT modulo, userid, courseid, datahora, visualizado, concluido, coursemoduleid FROM vw_painel_conclusoes WHERE datahora > ? ORDER BY datahora ASC LIMIT " . SYS_LIMIT_DADOS_CRON . ";", array("s", $ultimo));
         $count['totalRetornado'] = $mysqlMoodle->numRows();
         echo '<dt class="text-info">Conclusões:</dt><dd class="text-info">' . $mysqlMoodle->numRows() . '</dd>';
         ob_flush();
         flush();
         if ($mysqlMoodle->numRows()) {
             while ($mysqlMoodle->fetch()) {
-                $identificador = 'Módulo: ' . $mysqlMoodle->res["modulo"] . ' - Visualizado: ' . $mysqlMoodle->res["visualizado"] . ' - Concluido: ' . $mysqlMoodle->res["concluido"] . ' - Userid: ' . $mysqlMoodle->res["userid"] . ' - Courseid: ' . $mysqlMoodle->res["courseid"] . ' - DataHora: ' . $mysqlMoodle->res["datahora"];
-                $mysql->execute("INSERT IGNORE INTO ava_conclusao (usu_int_codigo, cur_int_codigo, con_dti_criacao, con_dti_datahora, con_var_modulo, con_cha_visualizado, con_cha_concluido) VALUES ($qryUsuario,$qryCurso,NOW(),?,?,?,?);", array("iissis", $mysqlMoodle->res["userid"], $mysqlMoodle->res["courseid"], $mysqlMoodle->res["datahora"], substr($mysqlMoodle->res["modulo"], 0, 100), $mysqlMoodle->res["visualizado"], $mysqlMoodle->res["concluido"]), false);
+                $identificador = 'Módulo: ' . $mysqlMoodle->res["modulo"] . ' - Visualizado: ' . $mysqlMoodle->res["visualizado"] . ' - Concluido: ' . $mysqlMoodle->res["concluido"] . ' - Userid: ' . $mysqlMoodle->res["userid"] . ' - Courseid: ' . $mysqlMoodle->res["courseid"] . ' - Coursemoduleid: ' . $mysqlMoodle->res["coursemoduleid"] . ' - DataHora: ' . $mysqlMoodle->res["datahora"];
+                $mysql->execute("INSERT IGNORE INTO ava_conclusao (usu_int_codigo, cur_int_codigo, mod_int_codigo, con_dti_criacao, con_dti_datahora, con_var_modulo, con_cha_visualizado, con_cha_concluido) VALUES ($qryUsuario,$qryCurso,$qryModulo,NOW(),?,?,?,?);", array("iiissis", $mysqlMoodle->res["userid"], $mysqlMoodle->res["courseid"], $mysqlMoodle->res["coursemoduleid"], $mysqlMoodle->res["datahora"], substr($mysqlMoodle->res["modulo"], 0, 200), $mysqlMoodle->res["visualizado"], $mysqlMoodle->res["concluido"]), false);
                 $count['inserido']++;
                 echo '<dt class="text-success">' . $count['inserido'] . ' - Inserido</dt><dd class="text-success">' . $identificador . '</dd>';
                 fwrite($fp, date("d/m/Y H:i:s") . ' - ' . $count['inserido'] . ' - Inserido - ' . $identificador . "\n");

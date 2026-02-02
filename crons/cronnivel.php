@@ -61,13 +61,13 @@ function atualizarNiveis($fp) {
         flush();
         $arrMoodle = array();
         $mysqlMoodle = new GDbMysqlMoodle();
-        $mysqlMoodle->execute("SELECT id, nome, hierarquia, nivel, pai, codigos FROM moodle.vw_categorias WHERE visivel = 1 ORDER BY hierarquia, nivel");
+        $mysqlMoodle->execute("SELECT id, nome, hierarquia, nivel, pai, codigos, CASE visivel WHEN 1 THEN 'S' ELSE 'N' END AS visivel FROM moodle.vw_categorias ORDER BY hierarquia, nivel");
         echo '<dt class="text-info">Moodle:</dt><dd class="text-info">' . $mysqlMoodle->numRows() . '</dd>';
         ob_flush();
         flush();
         if ($mysqlMoodle->numRows()) {
             while ($mysqlMoodle->fetch()) {
-                $arrMoodle[] = array("id" => $mysqlMoodle->res["id"], "nome" => $mysqlMoodle->res["nome"], "nivel" => $mysqlMoodle->res["nivel"], "hierarquia" => $mysqlMoodle->res["hierarquia"], "pai" => seVazioRetorneZero($mysqlMoodle->res["pai"]));
+                $arrMoodle[] = array("id" => $mysqlMoodle->res["id"], "nome" => $mysqlMoodle->res["nome"], "nivel" => $mysqlMoodle->res["nivel"], "hierarquia" => $mysqlMoodle->res["hierarquia"], "pai" => seVazioRetorneZero($mysqlMoodle->res["pai"]), "visivel" => $mysqlMoodle->res["visivel"]);
             }
         }
 
@@ -76,13 +76,13 @@ function atualizarNiveis($fp) {
         flush();
         $arrNivel = array();
         $mysql = new GDbMysql();
-        $mysql->execute("SELECT niv_int_codigo, niv_var_identificador, niv_var_nome, niv_int_nivel, niv_var_identificador_pai, niv_var_hierarquia FROM nivel ORDER BY niv_int_nivel, niv_var_nome");
+        $mysql->execute("SELECT niv_int_codigo, niv_var_identificador, niv_var_nome, niv_int_nivel, niv_var_identificador_pai, niv_var_hierarquia, niv_cha_visivel FROM nivel ORDER BY niv_int_nivel, niv_var_nome");
         echo '<dt class="text-info">Painel:</dt><dd class="text-info">' . $mysql->numRows() . '</dd>';
         ob_flush();
         flush();
         if ($mysql->numRows()) {
             while ($mysql->fetch()) {
-                $arrNivel[] = array("id" => $mysql->res["niv_var_identificador"], "nome" => $mysql->res["niv_var_nome"], "nivel" => $mysql->res["niv_int_nivel"], "hierarquia" => $mysql->res["niv_var_hierarquia"], "pai" => seVazioRetorneZero($mysql->res["niv_var_identificador_pai"]));
+                $arrNivel[] = array("id" => $mysql->res["niv_var_identificador"], "nome" => $mysql->res["niv_var_nome"], "nivel" => $mysql->res["niv_int_nivel"], "hierarquia" => $mysql->res["niv_var_hierarquia"], "pai" => seVazioRetorneZero($mysql->res["niv_var_identificador_pai"]), "visivel" => $mysql->res["niv_cha_visivel"]);
             }
         }
 
@@ -100,7 +100,7 @@ function atualizarNiveis($fp) {
             }
             if (!$existe) {
                 $nenhum = false;
-                $identificador = 'Id: ' . $nivel["id"] . ' - Nome: ' . $nivel["nome"] . ' - Nível: ' . $nivel["nivel"] . ' - Hierarquia: ' . $nivel["hierarquia"] . ' - Pai: ' . $nivel["pai"];
+                $identificador = 'Id: ' . $nivel["id"] . ' - Nome: ' . $nivel["nome"] . ' - Nível: ' . $nivel["nivel"] . ' - Hierarquia: ' . $nivel["hierarquia"] . ' - Pai: ' . $nivel["pai"] . ' - Visível: ' . $nivel["visivel"];
                 try {
                     $mysql = new GDbMysql();
                     $mysql->execute("DELETE FROM nivel WHERE niv_var_identificador = ?;", array("s", $nivel["id"]), false);
@@ -129,24 +129,24 @@ function atualizarNiveis($fp) {
         foreach ($arrMoodle as $moodle) {
             $existe = false;
             foreach ($arrNivel as $nivel) {
-                if ($moodle["id"] == $nivel["id"] && $moodle["nome"] == $nivel["nome"] && $moodle["nivel"] == $nivel["nivel"] && $moodle["hierarquia"] == $nivel["hierarquia"] && $moodle["pai"] == $nivel["pai"]) {
+                if ($moodle["id"] == $nivel["id"] && $moodle["nome"] == $nivel["nome"] && $moodle["nivel"] == $nivel["nivel"] && $moodle["hierarquia"] == $nivel["hierarquia"] && $moodle["pai"] == $nivel["pai"] && $moodle["visivel"] == $nivel["visivel"]) {
                     $existe = true;
                     break;
                 }
             }
             if (!$existe) {
                 $nenhum = false;
-                $identificador = 'Id: ' . $moodle["id"] . ' - Nome: ' . $moodle["nome"] . ' - Nível: ' . $moodle["nivel"] . ' - Hierarquia: ' . $moodle["hierarquia"] . ' - Pai: ' . $moodle["pai"];
+                $identificador = 'Id: ' . $moodle["id"] . ' - Nome: ' . $moodle["nome"] . ' - Nível: ' . $moodle["nivel"] . ' - Hierarquia: ' . $moodle["hierarquia"] . ' - Pai: ' . $moodle["pai"] . ' - Visível: ' . $moodle["visivel"];
                 try {
                     $mysql = new GDbMysql();
                     $qtd = $mysql->executeValue("SELECT COUNT(*) FROM nivel WHERE niv_var_identificador = ?", array("s", $moodle["id"]));
                     if ($qtd > 0) {
-                        $mysql->execute("UPDATE nivel SET niv_var_nome = ?, niv_int_nivel = ?, niv_var_hierarquia = ?, niv_var_identificador_pai = ? WHERE niv_var_identificador = ?;", array("sisss", $moodle["nome"], $moodle["nivel"], $moodle["hierarquia"], $moodle["pai"], $moodle["id"]), false);
+                        $mysql->execute("UPDATE nivel SET niv_var_nome = ?, niv_int_nivel = ?, niv_var_hierarquia = ?, niv_var_identificador_pai = ?, niv_cha_visivel = ? WHERE niv_var_identificador = ?;", array("sissss", $moodle["nome"], $moodle["nivel"], $moodle["hierarquia"], $moodle["pai"], $moodle["visivel"], $moodle["id"]), false);
                         $count['alterado']++;
                         echo '<dt class="text-success">' . $count['alterado'] . ' - Alterado</dt><dd class="text-success">' . $identificador . '</dd>';
                         fwrite($fp, date("d/m/Y H:i:s") . ' - ' . $count['alterado'] . ' - Alterado - ' . $identificador . "\n");
                     } else {
-                        $mysql->execute("INSERT INTO nivel (niv_var_identificador, niv_var_nome, niv_int_nivel, niv_var_hierarquia, niv_var_identificador_pai) VALUES (?,?,?,?,?);", array("ssiss", $moodle["id"], $moodle["nome"], $moodle["nivel"], $moodle["hierarquia"], $moodle["pai"]), false);
+                        $mysql->execute("INSERT INTO nivel (niv_var_identificador, niv_var_nome, niv_int_nivel, niv_var_hierarquia, niv_var_identificador_pai, niv_cha_visivel) VALUES (?,?,?,?,?,?);", array("ssisss", $moodle["id"], $moodle["nome"], $moodle["nivel"], $moodle["hierarquia"], $moodle["pai"], $moodle["visivel"]), false);
                         $count['inserido']++;
                         echo '<dt class="text-success">' . $count['inserido'] . ' - Inserido</dt><dd class="text-success">' . $identificador . '</dd>';
                         fwrite($fp, date("d/m/Y H:i:s") . ' - ' . $count['inserido'] . ' - Inserido - ' . $identificador . "\n");

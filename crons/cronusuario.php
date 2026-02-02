@@ -67,7 +67,7 @@ function atualizarUsuario($fp) {
         flush();
         if ($mysqlMoodle->numRows()) {
             while ($mysqlMoodle->fetch()) {
-                $arrMoodle[] = array("id" => $mysqlMoodle->res["userid"], "escola" => seVazioRetorneNulo($mysqlMoodle->res["esc_int_codigo"]), "cpf" => seVazioRetorneNulo($mysqlMoodle->res["cpf"]), "matricula" => seVazioRetorneNulo($mysqlMoodle->res["matricula"]), "nome" => seVazioRetorneNulo($mysqlMoodle->res["nome"]), "cargo" => seVazioRetorneNulo($mysqlMoodle->res["cargo"]), "funcao" => seVazioRetorneNulo($mysqlMoodle->res["funcao"]), "email" => seVazioRetorneNulo($mysqlMoodle->res["email"]));
+                $arrMoodle[] = array("id" => $mysqlMoodle->res["userid"], "escola" => seVazioRetorneNulo($mysqlMoodle->res["esc_int_codigo"]), "cpf" => seVazioRetorneNulo($mysqlMoodle->res["cpf"]), "matricula" => seVazioRetorneNulo(substr($mysqlMoodle->res["matricula"],0, 20)), "nome" => seVazioRetorneNulo($mysqlMoodle->res["nome"]), "cargo" => seVazioRetorneNulo($mysqlMoodle->res["cargo"]), "funcao" => seVazioRetorneNulo($mysqlMoodle->res["funcao"]), "email" => seVazioRetorneNulo($mysqlMoodle->res["email"]));
             }
         }
 
@@ -93,9 +93,9 @@ function atualizarUsuario($fp) {
         foreach ($arrUsuario as $usuario) {
             $existe = false;
             foreach ($arrMoodle as $moodle) {
-                if ($moodle["id"] == $usuario["id"] && $moodle["escola"] == $usuario["escola"] && $moodle["cpf"] == $usuario["cpf"] &&
-                        /*$moodle["matricula"] == $usuario["matricula"] &&*/ $moodle["nome"] == $usuario["nome"] && $moodle["cargo"] == $usuario["cargo"] &&
-                        $moodle["funcao"] == $usuario["funcao"] && $moodle["email"] == $usuario["email"]) {
+                if ($moodle["id"] == $usuario["id"]/* && $moodle["escola"] == $usuario["escola"] && $moodle["cpf"] == $usuario["cpf"] &&
+                  $moodle["matricula"] == $usuario["matricula"] && $moodle["nome"] == $usuario["nome"] && $moodle["cargo"] == $usuario["cargo"] &&
+                  $moodle["funcao"] == $usuario["funcao"] && $moodle["email"] == $usuario["email"] */) {
                     $existe = true;
                     break;
                 }
@@ -132,7 +132,7 @@ function atualizarUsuario($fp) {
             $existe = false;
             foreach ($arrUsuario as $usuario) {
                 if ($moodle["id"] == $usuario["id"] && $moodle["escola"] == $usuario["escola"] && $moodle["cpf"] == $usuario["cpf"] &&
-                        /*$moodle["matricula"] == $usuario["matricula"] &&*/ $moodle["nome"] == $usuario["nome"] && $moodle["cargo"] == $usuario["cargo"] &&
+                        $moodle["matricula"] == $usuario["matricula"] && $moodle["nome"] == $usuario["nome"] && $moodle["cargo"] == $usuario["cargo"] &&
                         $moodle["funcao"] == $usuario["funcao"] && $moodle["email"] == $usuario["email"]) {
                     $existe = true;
                     break;
@@ -145,7 +145,7 @@ function atualizarUsuario($fp) {
                     $mysql = new GDbMysql();
                     $qtd = $mysql->executeValue("SELECT COUNT(*) FROM ava_usuario WHERE usu_int_userid = ?", array("s", $moodle["id"]));
                     if ($qtd > 0) {
-                        $mysql->execute("UPDATE ava_usuario SET esc_int_codigo = ?, usu_var_cpf = ?, usu_var_matricula = ?, usu_var_nome = ?, usu_var_cargo = ?, usu_var_funcao = ?, usu_var_email = ?  WHERE usu_int_userid = ?;", array("isssssss", $moodle["escola"], $moodle["cpf"], $moodle["matricula"], $moodle["nome"], $moodle["cargo"], $moodle["funcao"], $moodle["email"], $moodle["id"]), false);
+                        $mysql->execute("UPDATE IGNORE ava_usuario SET esc_int_codigo = ?, usu_var_cpf = ?, usu_var_matricula = ?, usu_var_nome = ?, usu_var_cargo = ?, usu_var_funcao = ?, usu_var_email = ?  WHERE usu_int_userid = ?;", array("isssssss", $moodle["escola"], $moodle["cpf"], $moodle["matricula"], $moodle["nome"], $moodle["cargo"], $moodle["funcao"], $moodle["email"], $moodle["id"]), false);
                         $count['alterado']++;
                         echo '<dt class="text-success">' . $count['alterado'] . ' - Alterado</dt><dd class="text-success">' . $identificador . '</dd>';
                         fwrite($fp, date("d/m/Y H:i:s") . ' - ' . $count['alterado'] . ' - Alterado - ' . $identificador . "\n");

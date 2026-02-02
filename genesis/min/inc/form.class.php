@@ -628,10 +628,15 @@ class GForm {
         if ($selecione)
             $options = array('-1' => 'Selecione...') + $options;
         foreach ($options as $indice => $value) {
+            $situacao = '';
+            if (substr($value, 0, 3) == '###') {
+                $value = substr($value, 3);
+                $situacao = ' disabled class="disabled item-desabilitado"';
+            }
             if (in_array($indice, $selectedOption))
-                $retorno .= '<option selected="selected" value="' . $indice . '">' . $value . '</option>';
+                $retorno .= '<option selected="selected" value="' . $indice . '" ' . $situacao . '>' . $value . '</option>';
             else
-                $retorno .= '<option value="' . $indice . '">' . $value . '</option>';
+                $retorno .= '<option value="' . $indice . '" ' . $situacao . '>' . $value . '</option>';
         }
 
         $retorno .= '</select>' . $legendaDepois;
@@ -1069,7 +1074,7 @@ class GForm {
                     "firstDay": 1},';
         if (isset($paramCampo["value"])) {
             $arr = explode(" - ", $paramCampo["value"]);
-            $retorno .= '"startDate": "' . $arr[0] . '", "endDate": "' . $arr[1] . '",';
+            $retorno .= 'startDate: "' . $arr[0] . '", endDate: "' . $arr[1] . '",';
         }
         if ($paramConfig) {
             foreach ($paramConfig as $key => $value) {
