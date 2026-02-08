@@ -11,30 +11,39 @@ if ($arrParam["filtro_curso"] != "") {
 }
 if ($filtro_curso != '') {
 
-    $filtro_escola = '';
-    if ($arrParam["filtro_escola"] != "") {
-        $filtro_escola = implode(",", $arrParam["filtro_escola"]);
-    }
-    if ($filtro_escola != '') {
+    $filtro_tipo = $arrParam["filtro_tipo"];
+    if (!seNuloOuVazioOuMenosUm($filtro_tipo)) {
         $filtro_agrupamento = $arrParam["filtro_agrupamento"];
         if (!seNuloOuVazioOuMenosUm($filtro_agrupamento)) {
             $ordenacao = $arrParam["ordenacao"];
             if (!seNuloOuVazioOuMenosUm($ordenacao)) {
                 try {
-                    $queryFiltroCurso = "";
                     $link = null;
                     $filter = new GFilter();
-                    if (count($arrParam["filtro_escola"]) != buscarQtdEscolas()) {
-                        $filter->addClause("AND u.esc_int_codigo IN ($filtro_escola) ");
-                    }
-                    if (count($arrParam["filtro_curso"]) != buscarQtdCursos()) {
-                        $filter->addClause("AND m.cur_int_codigo IN ($filtro_curso) ");
-                        $queryFiltroCurso = " AND t.cur_int_codigo IN ($filtro_curso) ";
-                    }
-                    $filtro_periodo = $arrParam["filtro_periodo"];
-                    $arrData = explode(" - ", $filtro_periodo);
-                    $filter->addClause("AND NOT EXISTS (SELECT 1 FROM ava_acesso a WHERE m.usu_int_codigo = a.usu_int_codigo AND (a.ace_dti_datahora BETWEEN '" . GF::formatarData($arrData[0]) . " 00:00:00' AND '" . GF::formatarData($arrData[1]) . " 23:59:59')) ");
 
+                    switch ($filtro_tipo) {
+                        case "C":
+                            $mod_cha_conclusao2 = " WHERE m2.mod_cha_conclusao = 'S' AND m2.cur_int_codigo = a.cur_int_codigo ";
+                            $mod_cha_conclusao = " AND m.mod_cha_conclusao = 'S' ";
+                            $con_cha_concluido = " c.con_cha_concluido = 'S' ";
+                            $filter->addClause("AND mod_cha_conclusao = 'S' ");
+                            break;
+                        case "V":
+                            $mod_cha_conclusao2 = "";
+                            $mod_cha_conclusao = "";
+                            $con_cha_concluido = " c.con_cha_visualizado = 'S' ";
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if (count($arrParam["filtro_curso"]) != buscarQtdCursos()) {
+                        $filter->addClause("AND a.cur_int_codigo IN ($filtro_curso) ");
+                    }
+                    /* $filtro_periodo = $arrParam["filtro_periodo"];
+                      $arrData = explode(" - ", $filtro_periodo);
+                      $filter->addClause("AND (con_dti_datahora BETWEEN '" . GF::formatarData($arrData[0]) . " 00:00:00' AND '" . GF::formatarData($arrData[1]) . " 23:59:59') ");
+                     */
                     switch ($ordenacao) {
                         case 'CC': // Curso Crescente
                             $filter->setOrder(array("CURSO" => "ASC"));
@@ -69,15 +78,13 @@ if ($filtro_curso != '') {
 
                         $mysql = new GDbMysql();
                         $query = array();
-                        $query[] = "SELECT COUNT(DISTINCT(u.usu_int_codigo)) AS QTD, e.esc_int_codigo, e.esc_var_nome AS ESCOLA, ";
-                        $query[] = "   (SELECT COUNT(DISTINCT(t.usu_int_codigo)) ";
-                        $query[] = "    FROM ava_matricula t ";
-                        $query[] = "    INNER JOIN ava_usuario s ON (s.usu_int_codigo = t.usu_int_codigo) ";
-                        $query[] = "    WHERE s.esc_int_codigo = e.esc_int_codigo ";
-                        $query[] = "    $queryFiltroCurso) AS TOTAL ";
-                        $query[] = "FROM ava_matricula m ";
-                        $query[] = "INNER JOIN ava_usuario u ON (u.usu_int_codigo = m.usu_int_codigo) ";
-                        $query[] = "INNER JOIN escola e ON (u.esc_int_codigo = e.esc_int_codigo) ";
+                        $query[] = "SELECT COUNT(c.con_int_codigo) AS QTD, e.esc_int_codigo, e.esc_var_nome AS ESCOLA, ";
+                        $query[] = "(SELECT COUNT(*) FROM ava_modulo m2 $mod_cha_conclusao2) * COUNT(DISTINCT u.usu_int_codigo) AS TOTAL ";
+                        $query[] = "FROM escola e ";
+                        $query[] = "INNER JOIN ava_usuario u ON (e.esc_int_codigo = u.esc_int_codigo) ";
+                        $query[] = "INNER JOIN ava_matricula a ON (a.usu_int_codigo = u.usu_int_codigo) ";
+                        $query[] = "INNER JOIN ava_modulo m ON (a.cur_int_codigo = m.cur_int_codigo $mod_cha_conclusao) ";
+                        $query[] = "LEFT JOIN ava_conclusao c ON (u.usu_int_codigo = c.usu_int_codigo AND c.mod_int_codigo = m.mod_int_codigo AND $con_cha_concluido) ";
                         $mysql->execute(implode("", $query) . $filter->getWhere(false), $filter->getParam());
 
                         if ($mysql->numRows()) {
@@ -96,6 +103,7 @@ if ($filtro_curso != '') {
                             $aviso = "Nenhum dado foi encontrado para os filtros selecionados.";
                         }
                     } else if ($filtro_agrupamento == 'E' && !seNuloOuVazioOuZeroOuMenosUm($arrParam["codigo"] ?? null)) {
+                        $filter->setGroupBy("u.usu_int_codigo, u.usu_var_nome, u.usu_var_cpf, u.usu_var_cargo, u.usu_var_funcao");
                         $filter->addFilter("AND", "u.esc_int_codigo", "=", "i", $arrParam["codigo"]);
                         if (substr($ordenacao, 1, 1) == 'C') {
                             $filter->setOrder(array("NOME" => "ASC"));
@@ -105,9 +113,12 @@ if ($filtro_curso != '') {
 
                         $mysql = new GDbMysql();
                         $query = array();
-                        $query[] = "SELECT DISTINCT(u.usu_int_codigo), u.usu_var_nome AS NOME, u.usu_var_cpf AS CPF, u.usu_var_cargo AS CARGO, u.usu_var_funcao AS FUNCAO ";
-                        $query[] = "FROM ava_matricula m ";
-                        $query[] = "INNER JOIN ava_usuario u ON (u.usu_int_codigo = m.usu_int_codigo) ";
+                        $query[] = "SELECT COUNT(c.con_int_codigo) AS QTD, u.usu_int_codigo, u.usu_var_nome AS NOME, u.usu_var_cpf AS CPF, u.usu_var_cargo AS CARGO, u.usu_var_funcao AS FUNCAO, ";
+                        $query[] = "(SELECT COUNT(*) FROM ava_modulo m2 $mod_cha_conclusao) AS TOTAL ";
+                        $query[] = "FROM ava_usuario u ";
+                        $query[] = "INNER JOIN ava_matricula a ON (a.usu_int_codigo = u.usu_int_codigo) ";
+                        $query[] = "INNER JOIN ava_modulo m ON (a.cur_int_codigo = m.cur_int_codigo $mod_cha_conclusao) ";
+                        $query[] = "LEFT JOIN ava_conclusao c ON (u.usu_int_codigo = c.usu_int_codigo AND c.mod_int_codigo = m.mod_int_codigo AND $con_cha_concluido) ";
                         $mysql->execute(implode("", $query) . $filter->getWhere(false), $filter->getParam());
 
                         $mysqlEscola = new GDbMysql();
@@ -115,29 +126,32 @@ if ($filtro_curso != '') {
 
                         if ($mysql->numRows()) {
                             $aviso = null;
-                            $arrTitulos = array("Nome", "CPF", "Cargo", "Função");
-                            $arrFormats = array("text-align: left", "text-align: center", "text-align: center", "text-align: center");
+                            $arrTitulos = array("Nome", "CPF", "Cargo", "Função", "Percentual");
+                            $arrFormats = array("text-align: left", "text-align: center", "text-align: center", "text-align: center", "text-align: center");
                             $arrFooter = array();
                             $tituloCentral = "Escola: <b>$escola</b>";
-                            $arrStyleTitulos = array("background: #f2f2f2;text-align: center;", "background: #f2f2f2;text-align: center;", "background: #f2f2f2;text-align: center;", "background: #f2f2f2;text-align: center;");
+                            $arrStyleTitulos = array("background: #f2f2f2;text-align: center;", "background: #f2f2f2;text-align: center;", "background: #f2f2f2;text-align: center;", "background: #f2f2f2;text-align: center;", "background: #f2f2f2;text-align: center;");
                             $styleTituloCentral = "text-align: center;color: #ffffff;";
                             $link = '<a class="btn-block text-center __pointer mt-2" onclick="carregarTabela(null, null);"><i class="fa fa-undo"></i> Voltar</a>';
                             while ($mysql->fetch()) {
-                                $arrDados[] = array("NOME" => $mysql->res["NOME"], "CPF" => $mysql->res["CPF"], "CARGO" => $mysql->res["CARGO"], "FUNCAO" => $mysql->res["FUNCAO"]);
+                                $percentual = round(porcentagem_nx($mysql->res["QTD"], $mysql->res["TOTAL"]), 2) . '%';
+                                $arrDados[] = array("NOME" => $mysql->res["NOME"], "CPF" => $mysql->res["CPF"], "CARGO" => $mysql->res["CARGO"], "FUNCAO" => $mysql->res["FUNCAO"], "PERC" => $percentual);
                             }
                         } else {
                             $aviso = "Nenhum dado foi encontrado para os filtros selecionados.";
                         }
                     } else if ($filtro_agrupamento == 'C' && seNuloOuVazioOuZeroOuMenosUm($arrParam["tipo"] ?? null)) {
-                        $filter->setGroupBy("c.cur_int_codigo, c.cur_var_nome");
+                        $filter->setGroupBy("cu.cur_int_codigo, cu.cur_var_nome");
 
                         $mysql = new GDbMysql();
                         $query = array();
-                        $query[] = "SELECT COUNT(DISTINCT(u.usu_int_codigo)) AS QTD, c.cur_int_codigo, c.cur_var_nome AS CURSO, ";
-                        $query[] = "(SELECT COUNT(DISTINCT(t.usu_int_codigo)) FROM ava_matricula t WHERE t.cur_int_codigo = c.cur_int_codigo) AS TOTAL ";
-                        $query[] = "FROM ava_matricula m ";
-                        $query[] = "INNER JOIN ava_usuario u ON (u.usu_int_codigo = m.usu_int_codigo) ";
-                        $query[] = "INNER JOIN ava_curso c ON (m.cur_int_codigo = c.cur_int_codigo) ";
+                        $query[] = "SELECT COUNT(c.con_int_codigo) AS QTD, cu.cur_int_codigo, cu.cur_var_nome AS CURSO, ";
+                        $query[] = "(SELECT COUNT(*) FROM ava_modulo m2 $mod_cha_conclusao) * COUNT(DISTINCT u.usu_int_codigo) AS TOTAL ";
+                        $query[] = "FROM ava_curso cu ";
+                        $query[] = "INNER JOIN ava_matricula ma ON (cu.cur_int_codigo = ma.cur_int_codigo) ";
+                        $query[] = "INNER JOIN ava_usuario u ON (u.usu_int_codigo = ma.usu_int_codigo) ";
+                        $query[] = "LEFT JOIN ava_conclusao c ON (u.usu_int_codigo = c.usu_int_codigo AND $con_cha_concluido) ";
+                        $query[] = "INNER JOIN ava_modulo m ON (c.mod_int_codigo = m.mod_int_codigo) ";
                         $mysql->execute(implode("", $query) . $filter->getWhere(false), $filter->getParam());
                         if ($mysql->numRows()) {
                             $aviso = null;
@@ -155,7 +169,8 @@ if ($filtro_curso != '') {
                             $aviso = "Nenhum dado foi encontrado para os filtros selecionados.";
                         }
                     } else if ($filtro_agrupamento == 'C' && !seNuloOuVazioOuZeroOuMenosUm($arrParam["codigo"] ?? null)) {
-                        $filter->addFilter("AND", "m.cur_int_codigo", "=", "i", $arrParam["codigo"]);
+                        $filter->setGroupBy("u.usu_int_codigo, u.usu_var_nome, u.usu_var_cpf, u.usu_var_cargo, u.usu_var_funcao");
+                        $filter->addFilter("AND", "ma.cur_int_codigo", "=", "i", $arrParam["codigo"]);
                         if (substr($ordenacao, 1, 1) == 'C') {
                             $filter->setOrder(array("NOME" => "ASC"));
                         } else {
@@ -164,9 +179,12 @@ if ($filtro_curso != '') {
 
                         $mysql = new GDbMysql();
                         $query = array();
-                        $query[] = "SELECT DISTINCT(u.usu_int_codigo), u.usu_var_nome AS NOME, u.usu_var_cpf AS CPF, u.usu_var_cargo AS CARGO, u.usu_var_funcao AS FUNCAO ";
-                        $query[] = "FROM ava_matricula m ";
-                        $query[] = "INNER JOIN ava_usuario u ON (u.usu_int_codigo = m.usu_int_codigo) ";
+                        $query[] = "SELECT COUNT(c.con_int_codigo) AS QTD, u.usu_int_codigo, u.usu_var_nome AS NOME, u.usu_var_cpf AS CPF, u.usu_var_cargo AS CARGO, u.usu_var_funcao AS FUNCAO, ";
+                        $query[] = "(SELECT COUNT(*) FROM ava_modulo m2 $mod_cha_conclusao) AS TOTAL ";
+                        $query[] = "FROM ava_usuario u ";
+                        $query[] = "INNER JOIN ava_matricula ma ON (u.usu_int_codigo = ma.usu_int_codigo) ";
+                        $query[] = "LEFT JOIN ava_conclusao c ON (u.usu_int_codigo = c.usu_int_codigo AND ma.cur_int_codigo = c.cur_int_codigo AND $con_cha_concluido) ";
+                        $query[] = "LEFT JOIN ava_modulo m ON (c.mod_int_codigo = m.mod_int_codigo) ";
                         $mysql->execute(implode("", $query) . $filter->getWhere(false), $filter->getParam());
 
                         $mysqlCurso = new GDbMysql();
@@ -174,15 +192,16 @@ if ($filtro_curso != '') {
 
                         if ($mysql->numRows()) {
                             $aviso = null;
-                            $arrTitulos = array("Nome", "CPF", "Cargo", "Função");
-                            $arrFormats = array("text-align: left", "text-align: center", "text-align: center", "text-align: center");
+                            $arrTitulos = array("Nome", "CPF", "Cargo", "Função", "Percentual");
+                            $arrFormats = array("text-align: left", "text-align: center", "text-align: center", "text-align: center", "text-align: center");
                             $arrFooter = array();
                             $tituloCentral = "Curso: <b>$curso</b>";
-                            $arrStyleTitulos = array("background: #f2f2f2;text-align: center;", "background: #f2f2f2;text-align: center;", "background: #f2f2f2;text-align: center;", "background: #f2f2f2;text-align: center;");
+                            $arrStyleTitulos = array("background: #f2f2f2;text-align: center;", "background: #f2f2f2;text-align: center;", "background: #f2f2f2;text-align: center;", "background: #f2f2f2;text-align: center;", "background: #f2f2f2;text-align: center;");
                             $styleTituloCentral = "text-align: center;color: #ffffff;";
                             $link = '<a class="btn-block text-center __pointer mt-2" onclick="carregarTabela(null, null);"><i class="fa fa-undo"></i> Voltar</a>';
                             while ($mysql->fetch()) {
-                                $arrDados[] = array("NOME" => $mysql->res["NOME"], "CPF" => $mysql->res["CPF"], "CARGO" => $mysql->res["CARGO"], "FUNCAO" => $mysql->res["FUNCAO"]);
+                                $percentual = round(porcentagem_nx($mysql->res["QTD"], $mysql->res["TOTAL"]), 2) . '%';
+                                $arrDados[] = array("NOME" => $mysql->res["NOME"], "CPF" => $mysql->res["CPF"], "CARGO" => $mysql->res["CARGO"], "FUNCAO" => $mysql->res["FUNCAO"], "PERC" => $percentual);
                             }
                         } else {
                             $aviso = "Nenhum dado foi encontrado para os filtros selecionados.";
@@ -229,7 +248,7 @@ if ($filtro_curso != '') {
             $aviso = "Favor selecionar como deseja agrupar.";
         }
     } else {
-        $aviso = "Favor selecionar ao menos uma escola.";
+        $aviso = "Favor selecionar o tipo de progresso.";
     }
 } else {
     $aviso = "Favor selecionar ao menos um curso.";

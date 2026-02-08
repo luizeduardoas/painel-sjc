@@ -14,8 +14,14 @@ $header->addMenu("USUARIO", "Manutenção de Usuários", "Insira, altere e exclu
 $header->addTheme(Theme::addLib(array("mask")));
 $header->show(false, $breadcrumb);
 /* -------------------------------------------------------------------------- */
+
+$usuarioSessao = getUsuarioSessao();
 $mysql = new GDbMysql();
-$opt_pef_var_descricao = $mysql->executeCombo("SELECT pef_int_codigo, pef_var_descricao FROM perfil WHERE pef_int_codigo <> 0 ORDER BY pef_var_descricao;");
+if ($usuarioSessao->getPerfil()->getPef_int_codigo() == PERFIL_ADMINISTRADOR) {
+    $opt_pef_var_descricao = $mysql->executeCombo("SELECT pef_int_codigo, pef_var_descricao FROM perfil WHERE pef_int_codigo <> 0 ORDER BY pef_var_descricao;");
+} else {
+    $opt_pef_var_descricao = $mysql->executeCombo("SELECT pef_int_codigo, pef_var_descricao FROM perfil WHERE pef_int_codigo > 2 ORDER BY pef_var_descricao;");
+}
 
 $acao = 'ins';
 $usu_int_codigo = null;
@@ -28,7 +34,7 @@ $usu_var_email = '';
 $usu_var_foto = URL_UPLOAD . 'usuario/unknown.png';
 $usu_var_motivo = '';
 $div_motivo = 'display:none;';
-$usu_cha_validado = 'N';
+$usu_cha_validado = 'S';
 
 global $_id;
 $usuario = new Usuario();

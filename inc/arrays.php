@@ -135,8 +135,8 @@ $__arrayAgrupamentoProgresso = array(
     "A" => "por Aluno"
 );
 $__arrayOrdemProgresso = array(
-    "QC" => "por Quantidade Crescente",
-    "QD" => "por Quantidade Decrescente",
+    "QC" => "por Percentual Crescente",
+    "QD" => "por Percentual Decrescente",
     "EC" => "por Escola Crescente",
     "ED" => "por Escola Decrescente",
     "CC" => "por Curso Crescente",

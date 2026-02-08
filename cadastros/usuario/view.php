@@ -55,7 +55,7 @@ if (is_null($usuario->getUsu_var_nome())) {
     $arrayBotoes = array();
     if (!getIframe()) {
         $arrayBotoes["btn_todos"] = "Ver Todos";
-        if (GSecurity::verificarPermissao("USUARIO_UPD", false)) {
+        if ($usuario->getPerfil()->getPef_int_codigo() != PERFIL_ADMINISTRADOR && GSecurity::verificarPermissao("USUARIO_UPD", false)) {
             $arrayBotoes["btn_alterar"] = "Alterar";
         }
         if ($usuario->getPerfil()->getPef_int_codigo() != PERFIL_ADMINISTRADOR && GSecurity::verificarPermissao("USUARIO_REP", false)) {
@@ -64,10 +64,10 @@ if (is_null($usuario->getUsu_var_nome())) {
         if ($usuario->getPerfil()->getPef_int_codigo() != PERFIL_ADMINISTRADOR && GSecurity::verificarPermissao("USUARIO_ENV_SEN", false)) {
             $arrayBotoes["btn_enviarsenha"] = "Enviar Senha";
         }
-        if (GSecurity::verificarPermissao("USUARIO_HIS", false)) {
+        if ($usuario->getPerfil()->getPef_int_codigo() != PERFIL_ADMINISTRADOR && GSecurity::verificarPermissao("USUARIO_HIS", false)) {
             $arrayBotoes["btn_historico"] = "Histórico";
         }
-        if ($usuario->getUsu_cha_status() == 'I' && GSecurity::verificarPermissao("USUARIO_DEL", false)) {
+        if ($usuario->getPerfil()->getPef_int_codigo() != PERFIL_ADMINISTRADOR && $usuario->getUsu_cha_status() == 'I' && GSecurity::verificarPermissao("USUARIO_DEL", false)) {
             $arrayBotoes["btn_excluir"] = "Excluir";
         }
     }

@@ -111,6 +111,7 @@ function atualizarModulo($fp) {
                     $count['retirado']++;
                     echo '<dt class="text-success">' . $count['retirado'] . ' - Retirado</dt><dd class="text-success">' . $identificador . '</dd>';
                     fwrite($fp, date("d/m/Y H:i:s") . ' - ' . $count['retirado'] . ' - Retirado - ' . $identificador . "\n");
+                    atualizarMatriculas($fp, $modulo["courseid"]);
                 } catch (GDbException $e) {
                     $count['erro']++;
                     echo '<dt class="text-danger">' . $count['erro'] . ' - Erro</dt><dd class="text-danger">' . $identificador . ' - ' . $e->getError() . ' </dd>';
@@ -155,6 +156,7 @@ function atualizarModulo($fp) {
                         echo '<dt class="text-success">' . $count['inserido'] . ' - Inserido</dt><dd class="text-success">' . $identificador . '</dd>';
                         fwrite($fp, date("d/m/Y H:i:s") . ' - ' . $count['inserido'] . ' - Inserido - ' . $identificador . "\n");
                     }
+                    atualizarMatriculas($fp, $moodle["courseid"]);
                 } catch (GDbException $e) {
                     $count['erro']++;
                     echo '<dt class="text-danger">' . $count['erro'] . ' - Erro</dt><dd class="text-danger">' . $identificador . ' - ' . $e->getError() . ' </dd>';
@@ -176,6 +178,32 @@ function atualizarModulo($fp) {
     }
     fwrite($fp, date("d/m/Y H:i:s") . ' - ATUALIZAR MÓDULO - TÉRMINO ' . "\n");
     return $count;
+}
+
+function atualizarMatriculas($fp, $courseid) {
+    try {  
+        $mysql = new GDbMysql();
+        $cur_int_codigo = $mysql->executeValue("SELECT cur_int_codigo FROM ava_curso WHERE cur_int_courseid = ?", array("i", $courseid));
+        
+        $query = "UPDATE ava_curso c ";
+        $query .= "SET c.cur_int_total_modulos = ( ";
+        $query .= "     SELECT COUNT(*) FROM ava_modulo ";
+        $query .= "     WHERE cur_int_codigo = ? AND mod_cha_conclusao = 'S' ";
+        $query .= " ) ";
+        $query .= "WHERE c.cur_int_codigo = ?;";        
+        $mysql = new GDbMysql();
+        $mysql->execute($query, array("ii", $cur_int_codigo, $cur_int_codigo), false);        
+        
+        $query = "UPDATE ava_matricula m ";
+        $query .= "JOIN ava_curso c ON (m.cur_int_codigo = c.cur_int_codigo) ";
+        $query .= "SET m.mat_dec_percentual = IF(c.cur_int_total_modulos > 0, (m.mat_int_qtd_concluida / c.cur_int_total_modulos) * 100, 0) ";
+        $query .= "WHERE m.cur_int_codigo = ?; ";
+        $mysql = new GDbMysql();
+        $mysql->execute($query, array("i", $cur_int_codigo), false);
+    } catch (GDbException $e) {
+        echo '<dt class="text-danger">Erro</dt><dd class="text-danger">Atualização de Matrículas - ' . $e->getError() . ' </dd>';
+        fwrite($fp, date("d/m/Y H:i:s") . ' - ERRO - Atualização de Matrículas - ' . $e->getError() . "\n");
+    }
 }
 
 // </editor-fold>

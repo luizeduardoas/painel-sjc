@@ -14,6 +14,12 @@ $header->addTheme(Theme::addLib(array("multiselect", "apexchart")));
 $header->show(false, $breadcrumb);
 /* -------------------------------------------------------------------------- */
 
+$opt_esc_var_nome = carregarComboEscolas();
+$codigosEscola = explode(",", buscarCookie("filtro_escola"));
+if (count($codigosEscola) == 0 || (isset($codigosEscola[0]) && $codigosEscola[0] == '')) {
+    $codigosEscola = array_keys($opt_esc_var_nome);
+}
+
 $opt_niv_var_nome = carregarComboNiveis();
 $codigosNivel = explode(",", buscarCookie("filtro_nivel"));
 if (count($codigosNivel) == 0 || (isset($codigosNivel[0]) && $codigosNivel[0] == '')) {
@@ -46,6 +52,10 @@ $html .= $form->addDateRange("filtro_periodo", "Período:", false, array("value"
 $html .= '<div class="space space-8"></div>';
 $html .= '</div>';
 $html .= '<div class="col-xs-12 no-padding-left">';
+$html .= $form->addSelectMulti("filtro_escola", $opt_esc_var_nome, $codigosEscola, "Escola:", array("class" => "multiselect"), array("class" => "required"), false, false, false);
+$html .= '<div class="space space-8"></div>';
+$html .= '</div>';
+$html .= '<div class="col-xs-12 no-padding-left">';
 $html .= $form->addSelectMulti("filtro_nivel", $opt_niv_var_nome, $codigosNivel, "Estrutura Organizacional:", array("class" => "multiselect"), array("class" => "required"), false, false, false, "loadNivel();");
 $html .= '<div class="space space-8"></div>';
 $html .= '</div>';
@@ -55,6 +65,7 @@ $html .= '</fieldset>';
 $html .= '<div class="form-actions center divBotoes">';
 $html .= '<button type="button" data-toggle="tooltip" data-placement="top" alt="Gerar Gráfico de Barras" title="Gerar Gráfico de Barras" rel="barras" class="btn_gerar btn btn-icon btn-pink tooltip-pink" data-original-title="Gerar Gráfico de Barras"><i class="ace-icon fa fa-bar-chart bigger-110"></i>Gerar Gráfico de Barras</button> ';
 $html .= '<button type="button" data-toggle="tooltip" data-placement="top" alt="Gerar Gráfico de Pizza" title="Gerar Gráfico de Pizza" rel="pizza" class="btn_gerar btn btn-icon btn-purple tooltip-purple" data-original-title="Gerar Gráfico de Pizza"><i class="ace-icon fa fa-pie-chart bigger-110"></i>Gerar Gráfico de Pizza</button>';
+$html .= '<button type="button" data-toggle="tooltip" data-placement="top" alt="Gerar Excel" title="Gerar Excel" id="btn_excel" class="btn btn-icon btn-success tooltip-success" data-original-title="Gerar Excel"><i class="ace-icon fa fa-file-excel-o bigger-110"></i>Gerar Excel</button>';
 $html .= '</div>';
 $html .= $form->close();
 $html .= gerarRodape(array('tipo' => 'box', 'col' => 6));
@@ -77,13 +88,19 @@ $footer->show();
             carregarGrafico(jQuery(this).attr('rel'));
         });
         jQuery("#btn_excel").click(function () {
-            window.open("<?php echo URL_SYS . 'graficos/g_acessos/'; ?>excel.php");
+            var filtro = '?filtro_escola=' + jQuery('#filtro_escola').val();
+            filtro += '&filtro_tipo=' + jQuery('#filtro_tipo').val();
+            filtro += '&filtro_nivel=' + jQuery('#filtro_nivel').val();
+            filtro += '&filtro_curso=' + jQuery('#cur_int_codigo').val();
+            filtro += '&filtro_periodo=' + jQuery('#filtro_periodo').val();
+            window.open("<?php echo URL_SYS . 'graficos/g_acessos/'; ?>excel.php" + filtro);
         });
         loadNivel();
     });
 
     function salvarFiltros() {
         setParametroCookie('filtro_tipo', jQuery('#filtro_tipo').val());
+        setParametroCookieGeral('filtro_escola', jQuery('#filtro_escola').val());
         setParametroCookieGeral('filtro_nivel', jQuery('#filtro_nivel').val());
         setParametroCookieGeral('filtro_curso', jQuery('#cur_int_codigo').val());
         setParametroCookie("filtro_periodo", jQuery("#filtro_periodo").val());
@@ -97,6 +114,6 @@ $footer->show();
     }
 
     function carregarGrafico(tipo) {
-        jQuery.gAjax.load("<?php echo URL_SYS . 'graficos/g_acessos/'; ?>load.php", {filtro_curso: jQuery("#cur_int_codigo").val(), filtro_tipo: jQuery("#filtro_tipo").val(), filtro_periodo: jQuery("#filtro_periodo").val(), tipo: tipo}, "#div_load");
+        jQuery.gAjax.load("<?php echo URL_SYS . 'graficos/g_acessos/'; ?>load.php", {filtro_curso: jQuery("#cur_int_codigo").val(), filtro_escola: jQuery("#filtro_escola").val(), filtro_tipo: jQuery("#filtro_tipo").val(), filtro_periodo: jQuery("#filtro_periodo").val(), tipo: tipo}, "#div_load");
     }
 </script>

@@ -44,7 +44,7 @@ if (GSecurity::verificarPermissao("HOMEGRAFICOS", false)) {
     $html .= '            <i class="ace-icon fa fa-sitemap"></i>';
     $html .= '        </div>';
     $html .= '        <div class="infobox-data">';
-    $html .= '            <span class="infobox-data-number">' . $total_niveis['count'] . '</span>';
+    $html .= '            <span class="infobox-data-number">' . GF::formatarNumero($total_niveis['count']) . '</span>';
     $html .= '            <div class="infobox-content">Estruturas Organizacionais</div>';
     $html .= '        </div>';
     $html .= '    </div>';
@@ -55,7 +55,7 @@ if (GSecurity::verificarPermissao("HOMEGRAFICOS", false)) {
     $html .= '            <i class="ace-icon fa fa-university"></i>';
     $html .= '        </div>';
     $html .= '        <div class="infobox-data">';
-    $html .= '            <span class="infobox-data-number">' . $total_escolas['count'] . '</span>';
+    $html .= '            <span class="infobox-data-number">' . GF::formatarNumero($total_escolas['count']) . '</span>';
     $html .= '            <div class="infobox-content">Escolas</div>';
     $html .= '        </div>';
     $html .= '    </div>';
@@ -66,7 +66,7 @@ if (GSecurity::verificarPermissao("HOMEGRAFICOS", false)) {
     $html .= '            <i class="ace-icon fa fa-book"></i>';
     $html .= '        </div>';
     $html .= '        <div class="infobox-data">';
-    $html .= '            <span class="infobox-data-number">' . $total_cursos['count'] . '</span>';
+    $html .= '            <span class="infobox-data-number">' . GF::formatarNumero($total_cursos['count']) . '</span>';
     $html .= '            <div class="infobox-content">Cursos</div>';
     $html .= '        </div>';
     $html .= '    </div>';
@@ -77,7 +77,7 @@ if (GSecurity::verificarPermissao("HOMEGRAFICOS", false)) {
     $html .= '            <i class="ace-icon fa fa-graduation-cap"></i>';
     $html .= '        </div>';
     $html .= '        <div class="infobox-data">';
-    $html .= '            <span class="infobox-data-number">' . $total_matriculas['count'] . '</span>';
+    $html .= '            <span class="infobox-data-number">' . GF::formatarNumero($total_matriculas['count']) . '</span>';
     $html .= '            <div class="infobox-content">Matrículas</div>';
     $html .= '        </div>';
     $html .= '    </div>';
@@ -88,7 +88,7 @@ if (GSecurity::verificarPermissao("HOMEGRAFICOS", false)) {
     $html .= '            <i class="ace-icon fa fa-users"></i>';
     $html .= '        </div>';
     $html .= '        <div class="infobox-data">';
-    $html .= '            <span class="infobox-data-number">' . $total_usuarios['count'] . '</span>';
+    $html .= '            <span class="infobox-data-number">' . GF::formatarNumero($total_usuarios['count']) . '</span>';
     $html .= '            <div class="infobox-content">Usuários</div>';
     $html .= '        </div>';
     $html .= '    </div>';
@@ -99,7 +99,7 @@ if (GSecurity::verificarPermissao("HOMEGRAFICOS", false)) {
     $html .= '            <i class="ace-icon fa fa-briefcase"></i>';
     $html .= '        </div>';
     $html .= '        <div class="infobox-data">';
-    $html .= '            <span class="infobox-data-number">' . $total_cargos['count'] . '</span>';
+    $html .= '            <span class="infobox-data-number">' . GF::formatarNumero($total_cargos['count']) . '</span>';
     $html .= '            <div class="infobox-content">Cargos Diferentes</div>';
     $html .= '        </div>';
     $html .= '    </div>';
@@ -110,7 +110,7 @@ if (GSecurity::verificarPermissao("HOMEGRAFICOS", false)) {
     $html .= '            <i class="ace-icon fa fa-wrench"></i>';
     $html .= '        </div>';
     $html .= '        <div class="infobox-data">';
-    $html .= '            <span class="infobox-data-number">' . $total_funcoes['count'] . '</span>';
+    $html .= '            <span class="infobox-data-number">' . GF::formatarNumero($total_funcoes['count']) . '</span>';
     $html .= '            <div class="infobox-content">Funções Diferentes</div>';
     $html .= '        </div>';
     $html .= '    </div>';
@@ -121,7 +121,7 @@ if (GSecurity::verificarPermissao("HOMEGRAFICOS", false)) {
     $html .= '            <i class="ace-icon fa fa-mouse-pointer"></i>';
     $html .= '        </div>';
     $html .= '        <div class="infobox-data">';
-    $html .= '            <span class="infobox-data-number">' . $total_acessos['count'] . '</span>';
+    $html .= '            <span class="infobox-data-number">' . GF::formatarNumero($total_acessos['count']) . '</span>';
     $html .= '            <div class="infobox-content">Acessos ao AVA</div>';
     $html .= '        </div>';
     $html .= '    </div>';
@@ -132,7 +132,7 @@ if (GSecurity::verificarPermissao("HOMEGRAFICOS", false)) {
     $html .= '            <i class="ace-icon fa fa-eye-slash"></i>';
     $html .= '        </div>';
     $html .= '        <div class="infobox-data">';
-    $html .= '            <span class="infobox-data-number">' . $total_naoacesso['count'] . '</span>';
+    $html .= '            <span class="infobox-data-number">' . GF::formatarNumero($total_naoacesso['count']) . '</span>';
     $html .= '            <div class="infobox-content">Nunca Acessou o AVA</div>';
     $html .= '        </div>';
     $html .= '    </div>';
@@ -143,7 +143,7 @@ if (GSecurity::verificarPermissao("HOMEGRAFICOS", false)) {
     $html .= '            <i class="ace-icon fa fa-tasks"></i>';
     $html .= '        </div>';
     $html .= '        <div class="infobox-data">';
-    $html .= '            <span class="infobox-data-number">' . $total_conclusoes['count'] . '</span>';
+    $html .= '            <span class="infobox-data-number">' . GF::formatarNumero($total_conclusoes['count']) . '</span>';
     $html .= '            <div class="infobox-content">Progressos ao AVA</div>';
     $html .= '        </div>';
     $html .= '    </div>';

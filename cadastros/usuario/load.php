@@ -48,10 +48,10 @@ try {
                 // <editor-fold defaultstate="collapsed" desc="Botões">
                 $arrayBotoes = array();
                 $arrayBotoes["view"] = "__visualizar('" . $usuario->getUsu_int_codigo() . "')";
-                if (GSecurity::verificarPermissao("USUARIO_UPD", false)) {
+                if ($usuario->getPerfil()->getPef_int_codigo() != PERFIL_ADMINISTRADOR && GSecurity::verificarPermissao("USUARIO_UPD", false)) {
                     $arrayBotoes["update"] = "__alterar('" . $usuario->getUsu_int_codigo() . "')";
                 }
-                if (GSecurity::verificarPermissao("USUARIO_HIS", false)) {
+                if ($usuario->getPerfil()->getPef_int_codigo() != PERFIL_ADMINISTRADOR && GSecurity::verificarPermissao("USUARIO_HIS", false)) {
                     $arrayBotoes["historico"] = "__historico('" . $usuario->getUsu_int_codigo() . "')";
                 }
                 if ($usuario->getPerfil()->getPef_int_codigo() != PERFIL_ADMINISTRADOR && GSecurity::verificarPermissao("USUARIO_ENV_SEN", false)) {
@@ -60,7 +60,7 @@ try {
                 if ($usuario->getPerfil()->getPef_int_codigo() != PERFIL_ADMINISTRADOR && GSecurity::verificarPermissao("USUARIO_REP", false)) {
                     $arrayBotoes["logarcomo"] = "__logarComo('" . $usuario->getUsu_int_codigo() . "')";
                 }
-                if ($usuario->getUsu_cha_status() == 'I' && GSecurity::verificarPermissao("USUARIO_DEL", false)) {
+                if ($usuario->getPerfil()->getPef_int_codigo() != PERFIL_ADMINISTRADOR && $usuario->getUsu_cha_status() == 'I' && GSecurity::verificarPermissao("USUARIO_DEL", false)) {
                     $arrayBotoes["delete"] = "__excluir('" . $usuario->getUsu_int_codigo() . "')";
                 }
                 $arr[$i][] = carregarBotoesGrid($arrayBotoes);

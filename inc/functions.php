@@ -927,13 +927,33 @@ function carregarComboNiveis() {
 }
 
 /**
+ * Retorna um array para usar como combobox de listagem de níveis
+ * 
+ * @return array
+ */
+function carregarComboEscolas() {
+    $mysql = new GDbMysql();
+    return $mysql->executeCombo("SELECT esc_int_codigo, esc_var_nome FROM escola ORDER BY esc_var_nome;");
+}
+
+/**
  * Retorna a quantidade de cursos existentes
  * 
  * @return int
  */
-function locaQtdCursos() {
+function buscarQtdCursos() {
     $mysql = new GDbMysql();
     return $mysql->executeValue("SELECT COUNT(*) FROM ava_curso;");
+}
+
+/**
+ * Retorna a quantidade de escolas existentes
+ * 
+ * @return int
+ */
+function buscarQtdEscolas() {
+    $mysql = new GDbMysql();
+    return $mysql->executeValue("SELECT COUNT(*) FROM escola;");
 }
 
 // </editor-fold>
@@ -2448,6 +2468,9 @@ function carregarBotoes($tipo = "I", $classPadrao = "", $rel = false, $styleDiv 
                 break;
             case "G":
                 $param = array("btn_gerar" => "Gerar");
+                break;
+            case "LE":
+                $param = array("btn_gerar" => "Gerar Listagem", "btn_excel" => "Gerar Excel");
                 break;
             case "P":
                 $param = array("btn_preencher" => "Preencher");
@@ -4381,6 +4404,7 @@ function gerarDadosGrafico($arrTitulos, $arrDados) {
         foreach ($dado as $key => $val) {
             switch ($key) {
                 case "QTD":
+                case "PROGRESSO_MEDIO_PERCENTUAL":
                     $temDados = true;
                     $grafico .= 'linha.push(' . $val . '); ';
                     break;
@@ -4395,6 +4419,121 @@ function gerarDadosGrafico($arrTitulos, $arrDados) {
         }
     }
     return ($temDados) ? $grafico : null;
+}
+
+/**
+ * Gerar o html de uma tabela com os dados e títulos passados
+ * 
+ * @param array $arrTitulos
+ * @param array $arrDados
+ * @param array $arrFooter
+ * @return string
+ */
+function arrayToTableRelatorio($arrTitulos, $arrDados, $arrFooter = array(), $arrFormats = array()) {
+    $html = '';
+    $html .= '<table border="1" width="100%">';
+    $html .= '<thead>';
+    $html .= '<tr>';
+    foreach ($arrTitulos as $titulo) {
+        $html .= '<th>' . GF::converter($titulo, FALSE) . '</th>';
+    }
+    $html .= '</tr>';
+    $html .= '</thead>';
+    $html .= '<tbody>';
+    foreach ($arrDados as $dado) {
+        $html .= '<tr>';
+        $i = 0;
+        foreach ($dado as $key => $val) {
+            if (isHTML($val) || is_numeric($val))
+                $html .= '<td ' . (isset($arrFormats[$i]) ? 'style="' . $arrFormats[$i] . '" ' : '') . '>' . $val . '</td>';
+            else
+                $html .= '<td ' . (isset($arrFormats[$i]) ? 'style="' . $arrFormats[$i] . '" ' : '') . '>' . mb_convert_encoding($val, 'utf-16', 'utf-8') . '</td>';
+            $i++;
+        }
+        $html .= '</tr>';
+    }
+    $html .= '</tbody>';
+    if (count($arrFooter)) {
+        $html .= '<tfoot>';
+        foreach ($arrFooter as $footer) {
+            $html .= '<tr>';
+            $i = 0;
+            foreach ($footer as $key => $val) {
+                if (isHTML($val) || is_numeric($val))
+                    $html .= '<td ' . (isset($arrFormats[$i]) ? 'style="' . $arrFormats[$i] . '" ' : '') . '>' . $val . '</td>';
+                else
+                    $html .= '<td ' . (isset($arrFormats[$i]) ? 'style="' . $arrFormats[$i] . '" ' : '') . '>' . mb_convert_encoding($val, 'utf-16', 'utf-8') . '</td>';
+                $i++;
+            }
+            $html .= '</tr>';
+        }
+        $html .= '</tfoot>';
+    }
+    $html .= '</table>';
+    return $html;
+}
+
+/**
+ * Gerar o html de uma tabela com os dados e títulos passados
+ * 
+ * @param array $arrTitulos
+ * @param array $arrDados
+ * @param array $arrFooter
+ * @param array $arrFormats
+ * @return string
+ */
+function gerarTabelaRelatorio($arrTitulos, $arrDados, $arrFooter, $arrFormats, $tituloCentral = false, $filtroObrigatorio = "Favor selecionar um filtro") {
+    $html = '';
+    if (count($arrTitulos)) {
+        if (count($arrDados)) {
+            $html .= '<table style="margin-bottom: 0;" class="table table-responsiv table-bordered table-hover table-striped">';
+            $html .= '<thead>';
+            if ($tituloCentral) {
+                $html .= '<tr><th colspan="' . count($arrTitulos) . '" style="text-align: center">' . $tituloCentral . '</th></tr>';
+            }
+            $html .= '<tr>';
+            foreach ($arrTitulos as $titulo) {
+                $html .= '<th style="text-align: center">' . $titulo . '</th>';
+            }
+            $html .= '</tr>';
+            $html .= '</thead>';
+            $html .= '<tbody>';
+            foreach ($arrDados as $dado) {
+                $html .= '<tr>';
+                $i = 0;
+                foreach ($dado as $key => $val) {
+                    $html .= '<td ' . (isset($arrFormats[$i]) ? 'style="' . $arrFormats[$i] . '" ' : '') . '>' . $val . '</td>';
+                    $i++;
+                }
+                $html .= '</tr>';
+            }
+            $html .= '</tbody>';
+            if (count($arrFooter)) {
+                $html .= '<tfoot>';
+                foreach ($arrFooter as $footer) {
+                    $html .= '<tr>';
+                    $j = 0;
+                    foreach ($footer as $key => $val) {
+                        $html .= '<th ' . (isset($arrFormats[$j]) ? 'style="' . $arrFormats[$j] . '" ' : '') . '>' . $val . '</th>';
+                        $j++;
+                    }
+                    $html .= '</tr>';
+                }
+                $html .= '</tfoot>';
+            }
+            $html .= '</table>';
+            if (count($arrDados) > 1) {
+                $html .= carregarRodapeTabela("<b>" . count($arrDados) . "</b> registros encontrados");
+            } else {
+                $html .= carregarRodapeTabela("Apenas 1 registro encontrado");
+            }
+        } else {
+            $html = carregarMensagem("A", "Nenhum dado foi encontrado", 12, false, "margin-bottom: 0;");
+        }
+    } else {
+        $html = carregarMensagem("A", $filtroObrigatorio, 12, false, "margin-bottom: 0;");
+    }
+    return $html;
 }
 
 /**
@@ -4541,6 +4680,10 @@ function formataTituloManutencao($acao) {
             return '';
             break;
     }
+}
+
+function carregarBarraProgresso($percentual, $excel = false) {
+    return $excel ? GF::formatarValor($percentual) . '%' : '<div class="progress pos-rel" style="margin: 0;" data-percent="' . GF::formatarValor($percentual) . '%"><div class="progress-bar" style="width:' . $percentual . '%;"></div></div>';
 }
 
 // </editor-fold>

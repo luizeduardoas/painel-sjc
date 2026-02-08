@@ -2,14 +2,14 @@
 global $genesis;
 if (is_null($genesis))
     require_once(__DIR__ . "/../../inc/global.php");
-GSecurity::verificarPermissao("G_MATRICULAS");
+GSecurity::verificarPermissao("G_PROGRESSO");
 
 $breadcrumb = new Breadcrumb();
 $breadcrumb->add("Início", URL_SYS . 'home/', 0);
-$breadcrumb->add("Gráficos >> Matrículas", URL_SYS . 'graficos/g_matriculas/', 1);
+$breadcrumb->add("Gráficos >> Progresso/Desempenho", URL_SYS . 'graficos/g_progresso/', 1);
 
-$header = new GHeader("Gráficos de Matrículas", true);
-$header->addMenu("G_MATRICULAS", "Gráficos de Matrículas", "Visualize os gráficos de Matrículas do sistema");
+$header = new GHeader("Gráficos de Progresso/Desempenho", true);
+$header->addMenu("G_PROGRESSO", "Gráficos de Progresso/Desempenho", "Visualize os gráficos de Progresso/Desempenho do sistema");
 $header->addTheme(Theme::addLib(array("multiselect", "apexchart")));
 $header->show(false, $breadcrumb);
 /* -------------------------------------------------------------------------- */
@@ -41,11 +41,6 @@ $html .= gerarCabecalho(array(
         ));
 $html .= $form->open("form");
 $html .= '<fieldset>';
-$html .= '<div class="col-lg-5 col-xs-12 no-padding-left">';
-global $__paramDataRangeRelatorio;
-$html .= $form->addDateRange("filtro_periodo", "Período:", false, array("value" => buscarCookie("filtro_periodo", date("d/m/Y") . ' - ' . date("d/m/Y")), "class" => "form-control campo", "placeholder" => "Período de tempo", "style" => "width: 180px;"), $__paramDataRangeRelatorio, array("ano" => true, "mes" => true), array("class" => "required"));
-$html .= '<div class="space space-8"></div>';
-$html .= '</div>';
 $html .= '<div class="col-xs-12 no-padding-left">';
 $html .= $form->addSelectMulti("filtro_escola", $opt_esc_var_nome, $codigosEscola, "Escola:", array("class" => "multiselect"), array("class" => "required"), false, false, false);
 $html .= '<div class="space space-8"></div>';
@@ -64,7 +59,7 @@ $html .= '<button type="button" data-toggle="tooltip" data-placement="top" alt="
 $html .= '</div>';
 $html .= $form->close();
 $html .= gerarRodape(array('tipo' => 'box', 'col' => 6));
-$html .= gerarCabecalho(array('tipo' => 'box', 'col' => 6, 'fa' => 'bar-chart', 'titulo' => 'Gráficos de Matrículas'));
+$html .= gerarCabecalho(array('tipo' => 'box', 'col' => 6, 'fa' => 'bar-chart', 'titulo' => 'Gráficos de Progresso/Desempenho'));
 $html .= '<div id="div_load" class="p-4">';
 $html .= carregarMensagem("A", "Selecione os filtros desejados e clique em Gerar.", 12, false);
 $html .= '</div>';
@@ -87,7 +82,7 @@ $footer->show();
             filtro += '&filtro_nivel=' + jQuery('#filtro_nivel').val();
             filtro += '&filtro_curso=' + jQuery('#cur_int_codigo').val();
             filtro += '&filtro_periodo=' + jQuery('#filtro_periodo').val();
-            window.open("<?php echo URL_SYS . 'graficos/g_matriculas/'; ?>excel.php" + filtro);
+            window.open("<?php echo URL_SYS . 'graficos/g_progresso/'; ?>excel.php" + filtro);
         });
         loadNivel();
     });
@@ -107,6 +102,6 @@ $footer->show();
     }
 
     function carregarGrafico(tipo) {
-        jQuery.gAjax.load("<?php echo URL_SYS . 'graficos/g_matriculas/'; ?>load.php", {filtro_curso: jQuery("#cur_int_codigo").val(), filtro_escola: jQuery("#filtro_escola").val(), filtro_periodo: jQuery("#filtro_periodo").val(), tipo: tipo}, "#div_load");
+        jQuery.gAjax.load("<?php echo URL_SYS . 'graficos/g_progresso/'; ?>load.php", {filtro_curso: jQuery("#cur_int_codigo").val(), filtro_escola: jQuery("#filtro_escola").val(), filtro_periodo: jQuery("#filtro_periodo").val(), tipo: tipo}, "#div_load");
     }
 </script>
