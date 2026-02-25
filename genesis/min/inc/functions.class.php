@@ -459,8 +459,11 @@ class GF {
     }
 
     public static function salvarLog($tipo, $msg) {
-        $arq = ROOT_LOGS . "app/" . date("Y-m-d") . ".txt";
-        $fp = fopen($arq, "a");
+        $root = ROOT_LOGS . "app/";
+        if (!is_dir($root)) {
+            mkdir($root, 0777, true);
+        }
+        $fp = fopen($root . date("Y-m-d") . ".txt", "a");
         fwrite($fp, date("d/m/Y H:i:s") . " - " . $tipo . " - " . $msg . "\r\n");
         fclose($fp);
     }
